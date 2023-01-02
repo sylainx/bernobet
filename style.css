@@ -1,0 +1,53 @@
+/* Style général */
+QWidget {
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: 14px;
+}
+
+/* Style du formulaire */
+QFormLayout {
+    /* Marge autour du formulaire */
+    margin: 40px;
+    /* Padding entre les champs du formulaire */
+    padding: 20px;
+    /* Arrière-plan du formulaire */
+    background-color: #f7f7f7;
+    /* Bordure du formulaire */
+    border: 1px solid #e1e1e1;
+    /* Rondeur des coins de la bordure */
+    border-radius: 4px;
+}
+
+/* Style des champs du formulaire */
+QLineEdit, QComboBox {
+    /* Marge intérieure des champs */
+    padding: 12px;
+    /* Bordure des champs */
+    border: 1px solid #ccc;
+    /* Rondeur des coins de la bordure */
+    border-radius: 4px;
+    /* Ombre des champs */
+}
+
+ QMenuBar {
+        background-color: #333;
+        color: #fff;
+    }
+    QMenuBar::item {
+        background-color: #333;
+        color: #fff;
+    }
+    QMenuBar::item:selected {
+        background-color: #555;
+        color: #fff;
+    }
+    QMenu {
+        background-color: #333;
+        color: #fff;
+    }
+    QMenu::item:selected {
+        background-color: #555;
+        color: #fff;
+    }
+
+
