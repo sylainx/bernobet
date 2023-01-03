@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QGroupBox, QLineEdit, \
     QRadioButton, QComboBox, QDateEdit, QButtonGroup, QMessageBox
 from PyQt5.QtCore import Qt, QDate
+
+from SessionManager import SessionManager
 from controllers.Controller import Controller
 from datetime import date as dateType
 
@@ -134,6 +136,7 @@ class Login(QDialog):
                 self.errorMsgLbl.setText("")
                 self.errorMsgLbl.setVisible(False)
                 # redirection
+                SessionManager.setItem('userStorage',result)
                 self.connectTo()
             else:
                 self.errorMsgLbl.setText(

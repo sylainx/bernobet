@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-<<<<<<< HEAD
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10" project-jdk-type="Python SDK" />
-=======
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10 (bernobet)" project-jdk-type="Python SDK" />
->>>>>>> 913a8fc (merge with Sylainx)
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10 (JetbrainsBet)" project-jdk-type="Python SDK" />
 </project>
