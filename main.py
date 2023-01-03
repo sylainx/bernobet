@@ -5,15 +5,25 @@ from PyQt5.QtCore import Qt
 from authentification import Login
 import functools
 
+from controllers.Controller import Controller
+
+
 class mainView(QMainWindow):
 
     def __init__(self) -> None:
         super().__init__()
-        login = Login(self)
-        self.setWindowTitle("bernobet")
+        self.initialise_constants()
+        self.login = Login(self)
+        
+        self.user_id= None
+        self.controller =  Controller(self.PATH_NAME)
+
+    def initialisation(self):
+        self.setWindowTitle(self.WINDOW_TITLE)
         self.setMinimumSize(1000, 600)
-        self.setWindowIcon(QIcon("assets/logo.pnp"))
+        self.setWindowIcon(QIcon(self.WINDOW_ICON))
         # self.show()
+        self.user_infos= dict()
         self.display()
         self.header_content()
         self.sidebar_content()
@@ -113,7 +123,8 @@ class mainView(QMainWindow):
         self.auth = QGroupBox()
         self.content_layout = QVBoxLayout()
 
-        self.user = QLabel("Joberno")
+        self.user = QLabel(f"Joberno ")
+        print(f"USer: {self.user_infos['username']}")
         self.sold = QLabel(f" Solde : {0.0} Gourdes")
 
         #Ajout des widgets
@@ -378,6 +389,35 @@ class mainView(QMainWindow):
 
         #Ajout des composants dans le main_layout
         self.body.setLayout(self.content_layout)
+
+
+    def initialise_constants(self):
+        self.TABLE_NAME = "users"
+        self.PATH_NAME="./db/database.db"
+        self.WINDOW_TITLE="bernobet"
+        self.WINDOW_ICON="assets/logo.pnp"
+
+    def get_user_datas(self):
+        if self.login.user_id > 0:
+            where_data= f"id = {self.login.user_id}"
+            result = self.controller.select(self.TABLE_NAME,where_data)
+            
+            data = {
+                'last_name': result[0][1],
+                'first_name': result[0][2],
+                'gender': result[0][3],
+                'birth_date': result[0][4],
+                'gender': result[0][5],
+                'phone': result[0][6],
+                'nif': result[0][7],
+                'username': result[0][8],
+                'balance': result[0][9],
+                'status': result[0][10],
+            }
+            
+            self.user_infos= data
+            self.initialisation()
+            
 
 
 

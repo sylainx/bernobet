@@ -3,6 +3,7 @@ from PyQt5.QtCore import Qt, QDate
 from controllers.Controller import Controller
 from datetime import date as dateType
 TABLE_NAME = "users"
+PATH_NAME="./db/database.db"
 COLUMNS_NAME = {
     "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
     "last_name": "varchar(255)",
@@ -26,7 +27,9 @@ class Login(QDialog):
         self.setFixedSize(500, 500)
         # START TABLE
         self.TABLE_NAME = 'users'
-        self.controller = Controller("./db/database.db")
+        self.user_id=None
+        print(f"USer:: {self.user_id}")
+        self.controller = Controller(PATH_NAME)
         # END TABLE
         self.mainLayout = QVBoxLayout()
         self.center()
@@ -93,8 +96,11 @@ class Login(QDialog):
         loginDialog = Login(self.parent)
         loginDialog.exec_()
 
-    def connectTo(self):
+    def connectTo(self,user_id):
         self.parent.show()
+        # passer details utilisateur qui est connecté
+        self.user_id= user_id
+        # 
         self.close()
 
     def center(self):
@@ -132,7 +138,7 @@ class Login(QDialog):
                 self.errorMsgLbl.setText("")
                 self.errorMsgLbl.setVisible(False)
                 # redirection
-                self.connectTo()
+                self.connectTo(result[0][0])
             else:
                 self.errorMsgLbl.setText(
                     "Vos informations ne sont pas correctes!")
@@ -153,7 +159,7 @@ class Register(QDialog):
         self.setWindowTitle(" Inscription")
         self.center()
         # START TABLE
-        self.controller = Controller("./db/database.db")
+        self.controller = Controller(PATH_NAME)
         # self.dropTable() # uncomment only to drop table
         self.createTable()
         # END TABLE
