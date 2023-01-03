@@ -2,6 +2,8 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QLabel, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QGroupBox, QLineEdit
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
+
+from SessionManager import SessionManager
 from authentification import Login
 import functools
 
@@ -12,14 +14,8 @@ class mainView(QMainWindow):
 
     def __init__(self) -> None:
         super().__init__()
-        self.initialise_constants()
-        self.login = Login(self)
-        
-        self.user_id= None
-        self.controller =  Controller(self.PATH_NAME)
-
-    def initialisation(self):
-        self.setWindowTitle(self.WINDOW_TITLE)
+        login = Login(self)
+        self.setWindowTitle("JetbrainsBet")
         self.setMinimumSize(1000, 600)
         self.setWindowIcon(QIcon(self.WINDOW_ICON))
         # self.show()
@@ -79,7 +75,6 @@ class mainView(QMainWindow):
 
 
     def header_content(self):
-
         #Menu de l'entete
         self.main_layout = QHBoxLayout()
         self.content_layout = QHBoxLayout()
@@ -88,7 +83,7 @@ class mainView(QMainWindow):
         self.menu.setFixedWidth(450)
 
         #Logo de l'application
-        self.logo = QLabel("Bernobet")
+        self.logo = QLabel("JetBrainsBet")
         self.logo.setStyleSheet(
             "color: #f4661b;"
         )
@@ -202,7 +197,6 @@ class mainView(QMainWindow):
 
 
     def bet_info_content(self):
-
         # Menu principal
         self.main_layout = QVBoxLayout()
         self.content_layout = QVBoxLayout()
@@ -260,7 +254,7 @@ class mainView(QMainWindow):
 
 
     def dashboard_content(self):
-
+        print(SessionManager.getItem('userStorage'))
         #Contenu du dashboard
         self.main_layout = QVBoxLayout()
         self.content_layout = QVBoxLayout()
@@ -287,7 +281,7 @@ class mainView(QMainWindow):
             if widget is not None:
                 widget.deleteLater()
 
-        print(self.account_content())
+        # print(self.account_content())
         # Mise à jour du layout du QWidget "body"
         self.body.setLayout(new_layout)
 

@@ -1,7 +1,11 @@
-from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QGroupBox, QLineEdit, QRadioButton, QComboBox, QDateEdit, QButtonGroup, QMessageBox
+from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QGroupBox, QLineEdit, \
+    QRadioButton, QComboBox, QDateEdit, QButtonGroup, QMessageBox
 from PyQt5.QtCore import Qt, QDate
+
+from SessionManager import SessionManager
 from controllers.Controller import Controller
 from datetime import date as dateType
+
 TABLE_NAME = "users"
 PATH_NAME="./db/database.db"
 COLUMNS_NAME = {
@@ -23,7 +27,7 @@ class Login(QDialog):
     def __init__(self, parent):
         super(Login, self).__init__(parent)
         self.parent = parent
-        self.setWindowTitle(" Connexion - Bernobet")
+        self.setWindowTitle(" Connexion - JetBrainsBet")
         self.setFixedSize(500, 500)
         # START TABLE
         self.TABLE_NAME = 'users'
@@ -131,14 +135,15 @@ class Login(QDialog):
 
             # Envoi des données de l'utilisateur au contrôleur pour enregistrement
             result = self.controller.select(self.TABLE_NAME, user_data)
-            
+
             if result:
                 # nettoyage
                 self.vider()
                 self.errorMsgLbl.setText("")
                 self.errorMsgLbl.setVisible(False)
                 # redirection
-                self.connectTo(result[0][0])
+                SessionManager.setItem('userStorage',result)
+                self.connectTo()
             else:
                 self.errorMsgLbl.setText(
                     "Vos informations ne sont pas correctes!")
@@ -151,6 +156,7 @@ class Login(QDialog):
     def vider(self):
         self.usernameField.text()
         self.passwordField.text()
+
 
 class Register(QDialog):
     def __init__(self, parent):
@@ -411,7 +417,6 @@ class Register(QDialog):
                     "status": status
                 }
 
-                
                 # Envoi des données de l'utilisateur au contrôleur pour enregistrement
                 result = self.controller.insert(TABLE_NAME, user_data.items())
 
