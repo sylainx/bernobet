@@ -1,7 +1,9 @@
-from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QGroupBox, QLineEdit, QRadioButton, QComboBox, QDateEdit, QButtonGroup, QMessageBox
+from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QGroupBox, QLineEdit, \
+    QRadioButton, QComboBox, QDateEdit, QButtonGroup, QMessageBox
 from PyQt5.QtCore import Qt, QDate
 from controllers.Controller import Controller
 from datetime import date as dateType
+
 TABLE_NAME = "users"
 COLUMNS_NAME = {
     "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
@@ -125,7 +127,7 @@ class Login(QDialog):
 
             # Envoi des données de l'utilisateur au contrôleur pour enregistrement
             result = self.controller.select(self.TABLE_NAME, user_data)
-            
+
             if result:
                 # nettoyage
                 self.vider()
@@ -145,6 +147,7 @@ class Login(QDialog):
     def vider(self):
         self.usernameField.text()
         self.passwordField.text()
+
 
 class Register(QDialog):
     def __init__(self, parent):
@@ -405,7 +408,6 @@ class Register(QDialog):
                     "status": status
                 }
 
-                
                 # Envoi des données de l'utilisateur au contrôleur pour enregistrement
                 result = self.controller.insert(TABLE_NAME, user_data.items())
 

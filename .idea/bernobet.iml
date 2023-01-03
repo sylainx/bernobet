@@ -4,7 +4,11 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
+<<<<<<< HEAD
     <orderEntry type="jdk" jdkName="Python 3.10" jdkType="Python SDK" />
+=======
+    <orderEntry type="jdk" jdkName="Python 3.10 (bernobet)" jdkType="Python SDK" />
+>>>>>>> 913a8fc (merge with Sylainx)
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
