@@ -26,7 +26,7 @@ class Login(QDialog):
     def __init__(self, parent):
         super(Login, self).__init__(parent)
         self.parent = parent
-        self.setWindowTitle(" Connexion - Bernobet")
+        self.setWindowTitle(" Connexion - JetBrainsBet")
         self.setFixedSize(500, 500)
         # START TABLE
         self.TABLE_NAME = 'users'

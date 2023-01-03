@@ -12,7 +12,7 @@ class mainView(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         login = Login(self)
-        self.setWindowTitle("bernobet")
+        self.setWindowTitle("JetbrainsBet")
         self.setMinimumSize(1000, 600)
         self.setWindowIcon(QIcon("assets/logo.pnp"))
         # self.show()
@@ -79,7 +79,7 @@ class mainView(QMainWindow):
         self.menu.setFixedWidth(450)
 
         #Logo de l'application
-        self.logo = QLabel("Bernobet")
+        self.logo = QLabel("JetBrainsBet")
         self.logo.setStyleSheet(
             "color: #f4661b;"
         )
