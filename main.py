@@ -1,9 +1,10 @@
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QLabel, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QGroupBox, QLineEdit
+from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QLabel, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QGroupBox, QLineEdit, QScrollArea
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
-
+import threading, time
 from SessionManager import SessionManager
+from Views.MatchsView import MatchView
 from authentification import Login
 import functools
 
@@ -13,18 +14,20 @@ from controllers.Controller import Controller
 class mainView(QMainWindow):
 
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__()        
         login = Login(self)
-        self.setWindowTitle("JetbrainsBet")
+        self.initialise_constants()
+        self.controller = Controller(self.PATH_NAME)
+        self.setWindowTitle(self.WINDOW_TITLE)
         self.setMinimumSize(1000, 600)
         self.setWindowIcon(QIcon(self.WINDOW_ICON))
         # self.show()
-        self.user_infos= dict()
+        self.user_infos = dict()
         self.display()
         self.header_content()
         self.sidebar_content()
         self.bet_info_content()
-
+        self.get_user_datas()
         self.content = QWidget()
         # self.content.setStyleSheet(
         #     "background-color: #FAFAFA;"
@@ -73,73 +76,69 @@ class mainView(QMainWindow):
 
         self.container.setSpacing(0)
 
-
     def header_content(self):
-        #Menu de l'entete
+        # Menu de l'entete
         self.main_layout = QHBoxLayout()
         self.content_layout = QHBoxLayout()
 
         self.menu = QGroupBox()
         self.menu.setFixedWidth(450)
 
-        #Logo de l'application
+        # Logo de l'application
         self.logo = QLabel("JetBrainsBet")
         self.logo.setStyleSheet(
             "color: #f4661b;"
         )
 
-        #Bouton pour les matchs
+        # Bouton pour les matchs
         self.match_btn = QPushButton("Matchs")
 
-        #Bouton pour les paris
+        # Bouton pour les paris
         self.bet_btn = QPushButton("Paris")
 
-        #Bouton pour les paiements
+        # Bouton pour les paiements
         self.payment_btn = QPushButton("Paiements")
 
-        #Bouton pour les comptes
+        # Bouton pour les comptes
         self.account_btn = QPushButton("Comptes")
 
-        #Ajout des widgets
+        # Ajout des widgets
         self.content_layout.addWidget(self.logo)
         self.content_layout.addWidget(self.match_btn)
         self.content_layout.addWidget(self.bet_btn)
         self.content_layout.addWidget(self.payment_btn)
         self.content_layout.addWidget(self.account_btn)
 
-
-        #Ajout des widgets du content_layout dans le menu
+        # Ajout des widgets du content_layout dans le menu
         self.menu.setLayout(self.content_layout)
 
-        #Ajout du menu dans le main_layout
+        # Ajout du menu dans le main_layout
         self.main_layout.addWidget(self.menu, alignment=Qt.AlignLeft)
 
-        #Authentification
+        # Authentification
         self.auth = QGroupBox()
         self.content_layout = QVBoxLayout()
 
         self.user = QLabel(f"Joberno ")
-        print(f"USer: {self.user_infos['username']}")
+        print(f"USer infos: {self.user_infos}")
         self.sold = QLabel(f" Solde : {0.0} Gourdes")
 
-        #Ajout des widgets
+        # Ajout des widgets
         self.content_layout.addWidget(self.user)
         self.content_layout.addWidget(self.sold)
 
-
-        #Ajout des widgets du content_layout dans le menu
+        # Ajout des widgets du content_layout dans le menu
         self.auth.setLayout(self.content_layout)
 
-        #Ajout des composants dans le main_layout
+        # Ajout des composants dans le main_layout
         self.main_layout.addWidget(self.auth, alignment=Qt.AlignRight)
 
-        #Ajout du main_layout dans le header
+        # Ajout du main_layout dans le header
         self.header.setLayout(self.main_layout)
-
 
     def sidebar_content(self):
 
-        #Menu principal
+        # Menu principal
         self.main_layout = QVBoxLayout()
         self.content_layout = QVBoxLayout()
 
@@ -152,20 +151,18 @@ class mainView(QMainWindow):
 
         # Ajout des Widgets
         self.content_layout.addWidget(self.subtitle_lbl)
+
         self.content_layout.addWidget(self.dashboard_btn)
         self.content_layout.addWidget(self.account_btn)
         self.content_layout.addWidget(self.match_btn)
 
         self.grp.setLayout(self.content_layout)
-        #Ajout des composants dans le main_layout
+        # Ajout des composants dans le main_layout
         self.main_layout.addWidget(self.grp, alignment=Qt.AlignTop)
 
-
-
-        #Informations
+        # Informations
         self.content_btm_layout = QVBoxLayout()
         self.grp = QGroupBox()
-
 
         self.info_lbl = QLabel("Informations")
         self.setting_btn = QPushButton("Parametres")
@@ -178,23 +175,23 @@ class mainView(QMainWindow):
         self.content_btm_layout.addWidget(self.help_btn)
         self.content_btm_layout.addWidget(self.about_btn)
 
-        #Ajout des composants dans le main_layout
+        # Ajout des composants dans le main_layout
         self.grp.setLayout(self.content_btm_layout)
 
         self.main_layout.addWidget(self.grp, alignment=Qt.AlignBottom)
         self.main_layout.setAlignment(Qt.AlignJustify)
 
-        #Ajout du main_layout dans le sidebar
+        # Ajout du main_layout dans le sidebar
         self.sidebar.setLayout(self.main_layout)
 
-        #Evenements sur les boutons
+        # Evenements sur les boutons
         self.dashboard_btn.clicked.connect(self.dashboard_content)
-        self.account_btn.clicked.connect(functools.partial(self.change_body_content, self.account_content()))
+        self.account_btn.clicked.connect(functools.partial(
+            self.change_body_content, self.account_content()))
         self.match_btn.clicked.connect(self.match_content)
         self.setting_btn.clicked.connect(self.setting_content)
         self.help_btn.clicked.connect(self.help_content)
         self.about_btn.clicked.connect(self.about_content)
-
 
     def bet_info_content(self):
         # Menu principal
@@ -206,7 +203,8 @@ class mainView(QMainWindow):
         self.subtitle_lbl = QLabel("Informations du pariage")
         self.bet_amount_lbl = QLabel("Montant du pariage : ")
         self.bet_amount_field = QLineEdit()
-        self.bet_amount_field.setPlaceholderText("Saisir le montant du pariage")
+        self.bet_amount_field.setPlaceholderText(
+            "Saisir le montant du pariage")
         self.account_btn = QPushButton("Parier")
         self.account_btn.setStyleSheet(
             "background-color: #f4661b;"
@@ -217,7 +215,6 @@ class mainView(QMainWindow):
 
         self.total_lbl = QLabel("Total : ")
         self.total_value_lbl = QLabel(f"{20.00} Gourdes")
-
 
         self.bet_win_lbl = QLabel("Possibilite de gain de : ")
         self.bet_win_value_lbl = QLabel(f"{300.00} Gourdes")
@@ -237,9 +234,8 @@ class mainView(QMainWindow):
         self.content_layout.addLayout(self.bet_h_layout)
         self.content_layout.addLayout(self.bet_win_h_layout)
 
-
         self.grp.setLayout(self.content_layout)
-        self.grp.setContentsMargins(5,5,5,5)
+        self.grp.setContentsMargins(5, 5, 5, 5)
 
         # Ajout des composants dans le main_layout
         self.main_layout.addWidget(self.grp, alignment=Qt.AlignTop)
@@ -252,10 +248,10 @@ class mainView(QMainWindow):
         # Evenements sur les boutons
         self.dashboard_btn.clicked.connect(self.dashboard_content)
 
-
     def dashboard_content(self):
+
         print(SessionManager.getItem('userStorage'))
-        #Contenu du dashboard
+        # Contenu du dashboard
         self.main_layout = QVBoxLayout()
         self.content_layout = QVBoxLayout()
 
@@ -263,12 +259,11 @@ class mainView(QMainWindow):
 
         self.subtitle_lbl = QLabel("Welcome to your dashboard")
 
-
         # Ajout des Widgets
         self.content_layout.addWidget(self.subtitle_lbl)
         self.content_layout.setAlignment(Qt.AlignCenter)
 
-        #Ajout des composants dans le main_layout
+        # Ajout des composants dans le main_layout
         self.body.setLayout(self.content_layout)
 
     def change_body_content(self, new_layout):
@@ -287,7 +282,7 @@ class mainView(QMainWindow):
 
     def account_content(self):
 
-        #Contenu du dashboard
+        # Contenu du dashboard
         self.main_layout = QVBoxLayout()
         self.account_content_layout = QVBoxLayout()
 
@@ -295,42 +290,90 @@ class mainView(QMainWindow):
 
         self.subtitle_lbl = QLabel("Welcome to your account")
 
-
         # Ajout des Widgets
         self.account_content_layout.addWidget(self.subtitle_lbl)
         self.account_content_layout.setAlignment(Qt.AlignCenter)
 
-        #Ajout des composants dans le main_layout
+        # Ajout des composants dans le main_layout
         # self.body.setLayout(self.account_content_layout)
 
         return self.account_content_layout
 
-
-
-
     def match_content(self):
+        
+        matchView = MatchView(self)
 
-        #Contenu du dashboard
+        # Contenu du dashboard
         self.main_layout = QVBoxLayout()
+        self.main_layout.setAlignment(Qt.AlignTop)
         self.content_layout = QVBoxLayout()
-
+        self.content_layout.setAlignment(Qt.AlignTop)
         self.grp = QGroupBox()
 
-        self.subtitle_lbl = QLabel("Welcome to your matchs")
+        self.subtitle_lbl = QLabel("Liste des matchs")
 
+        #
+        self.list_of_box_matchs = QWidget()
+        self.list_of_box_matchs.setContentsMargins(5,5,5,5)
+        
+        scrollLayout_BoxMatch = QScrollArea()
+        scrollLayout_BoxMatch.setWidgetResizable(True)
+        vLyt_listBoxMatchs = QVBoxLayout()
+        scrollLayout_BoxMatch.setWidget(self.list_of_box_matchs)
 
+        # *********** start Boite mise en Page pour un match
+        boxMatch_WDG = QWidget(self.list_of_box_matchs)
+        # 
+        boxMatch_WDG.setStyleSheet(
+            "background-color: rgb(94,101,102); border-radius: 5px;"
+        )
+        hLyt_match = QHBoxLayout(boxMatch_WDG)
+        # left box
+        self.eqDom_Lbl = QLabel("Equipe 1")
+        self.eqDom_Lbl.setStyleSheet(
+            "color: rgb(255,255,255);"
+            "font: 16px bold;"
+        )
+        self.quote1_Lbl = QLabel("1.5")
+        self.quote1_Lbl.setStyleSheet(
+            "color: #f4661b;"
+            "font: 12px;"
+        )
+        hLyt_match.addWidget(self.eqDom_Lbl, alignment=Qt.AlignLeft)
+        hLyt_match.addWidget(self.quote1_Lbl, alignment=Qt.AlignLeft)
+        # center box
+        self.eqScore_Lbl = QLabel(f"[ {0}-{0} ]")
+        self.eqScore_Lbl.setStyleSheet(
+            "color: rgb(255,255,255); padding: 2px; font: 16px bold;")
+        hLyt_match.addWidget(self.eqScore_Lbl)
+        # right box
+        self.eqDep_Lbl = QLabel("Equipe 2")
+        self.eqDep_Lbl.setStyleSheet(
+            "color: rgb(255,255,255);"
+            "font: 16px bold;"
+        )
+        self.quote2_Lbl = QLabel("2.5")
+        self.quote2_Lbl.setStyleSheet(
+            "color: #f4661b;"
+            "font: 12px;"
+        )
+        hLyt_match.addWidget(self.quote2_Lbl, alignment=Qt.AlignRight)
+        hLyt_match.addWidget(self.eqDep_Lbl, alignment=Qt.AlignRight)
+
+        # *********** end Boite mise en Page pour un match
+        
         # Ajout des Widgets
+        vLyt_listBoxMatchs.addWidget(scrollLayout_BoxMatch)
         self.content_layout.addWidget(self.subtitle_lbl)
-        self.content_layout.setAlignment(Qt.AlignCenter)
+        self.content_layout.addWidget(self.list_of_box_matchs)
+        self.content_layout.setAlignment(Qt.AlignTop)
 
-        #Ajout des composants dans le main_layout
+        # Ajout des composants dans le main_layout
         self.body.setLayout(self.content_layout)
-
-
 
     def setting_content(self):
 
-        #Contenu du dashboard
+        # Contenu du dashboard
         self.main_layout = QVBoxLayout()
         self.content_layout = QVBoxLayout()
 
@@ -338,18 +381,16 @@ class mainView(QMainWindow):
 
         self.subtitle_lbl = QLabel("Welcome to your setting info")
 
-
         # Ajout des Widgets
         self.content_layout.addWidget(self.subtitle_lbl)
         self.content_layout.setAlignment(Qt.AlignCenter)
 
-        #Ajout des composants dans le main_layout
+        # Ajout des composants dans le main_layout
         self.body.setLayout(self.content_layout)
-
 
     def help_content(self):
 
-        #Contenu du dashboard
+        # Contenu du dashboard
         self.main_layout = QVBoxLayout()
         self.content_layout = QVBoxLayout()
 
@@ -357,18 +398,16 @@ class mainView(QMainWindow):
 
         self.subtitle_lbl = QLabel("How can we help you ?")
 
-
         # Ajout des Widgets
         self.content_layout.addWidget(self.subtitle_lbl)
         self.content_layout.setAlignment(Qt.AlignCenter)
 
-        #Ajout des composants dans le main_layout
+        # Ajout des composants dans le main_layout
         self.body.setLayout(self.content_layout)
-
 
     def about_content(self):
 
-        #Contenu du dashboard
+        # Contenu du dashboard
         self.main_layout = QVBoxLayout()
         self.content_layout = QVBoxLayout()
 
@@ -376,26 +415,25 @@ class mainView(QMainWindow):
 
         self.subtitle_lbl = QLabel("We are devs !")
 
-
         # Ajout des Widgets
         self.content_layout.addWidget(self.subtitle_lbl)
         self.content_layout.setAlignment(Qt.AlignCenter)
 
-        #Ajout des composants dans le main_layout
+        # Ajout des composants dans le main_layout
         self.body.setLayout(self.content_layout)
-
 
     def initialise_constants(self):
         self.TABLE_NAME = "users"
-        self.PATH_NAME="./db/database.db"
-        self.WINDOW_TITLE="bernobet"
-        self.WINDOW_ICON="assets/logo.pnp"
+        self.PATH_NAME = "./db/database.db"
+        self.WINDOW_TITLE = "JetbrainsBet"
+        self.WINDOW_ICON = "assets/logo.pnp"
 
     def get_user_datas(self):
-        if self.login.user_id > 0:
-            where_data= f"id = {self.login.user_id}"
-            result = self.controller.select(self.TABLE_NAME,where_data)
-            
+        user_id = SessionManager.getItem('userStorage')
+        if user_id and user_id > 0:
+            where_data = f"id = {user_id}"
+            result = self.controller.select(self.TABLE_NAME, where_data)
+
             data = {
                 'last_name': result[0][1],
                 'first_name': result[0][2],
@@ -408,16 +446,15 @@ class mainView(QMainWindow):
                 'balance': result[0][9],
                 'status': result[0][10],
             }
-            
-            self.user_infos= data
+
+            self.user_infos = data
             self.initialisation()
-            
 
-
+    def updateUserInfo (self):
+        # self.user
+        pass
 
 if __name__ == '__main__':
     app = QApplication([])
     main = mainView()
     app.exec_()
-
-

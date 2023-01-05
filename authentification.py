@@ -7,7 +7,7 @@ from controllers.Controller import Controller
 from datetime import date as dateType
 
 TABLE_NAME = "users"
-PATH_NAME="./db/database.db"
+PATH_NAME = "./db/database.db"
 COLUMNS_NAME = {
     "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
     "last_name": "varchar(255)",
@@ -19,7 +19,8 @@ COLUMNS_NAME = {
     "username": "varchar(255)",
     "password": "varchar(255)",
     "balance": "DOUBLE",
-    "status": "varchar(255)"
+    "status": "varchar(255)",
+    "is_admin": "integer(5)"
 }
 
 
@@ -31,8 +32,7 @@ class Login(QDialog):
         self.setFixedSize(500, 500)
         # START TABLE
         self.TABLE_NAME = 'users'
-        self.user_id=None
-        print(f"USer:: {self.user_id}")
+        self.user_id = None
         self.controller = Controller(PATH_NAME)
         # END TABLE
         self.mainLayout = QVBoxLayout()
@@ -100,11 +100,9 @@ class Login(QDialog):
         loginDialog = Login(self.parent)
         loginDialog.exec_()
 
-    def connectTo(self,user_id):
+    def connectTo(self,):
         self.parent.show()
         # passer details utilisateur qui est connecté
-        self.user_id= user_id
-        # 
         self.close()
 
     def center(self):
@@ -142,7 +140,7 @@ class Login(QDialog):
                 self.errorMsgLbl.setText("")
                 self.errorMsgLbl.setVisible(False)
                 # redirection
-                SessionManager.setItem('userStorage',result)
+                SessionManager.setItem('userStorage', result[0][0])
                 self.connectTo()
             else:
                 self.errorMsgLbl.setText(
@@ -395,6 +393,7 @@ class Register(QDialog):
 
         balance = 0.0
         status = 'A'
+        is_admin = 0
 
         self.errorMsgLbl.setVisible(False)
 
@@ -414,7 +413,8 @@ class Register(QDialog):
                     "username": username,
                     "password": password,
                     "balance": balance,
-                    "status": status
+                    "status": status,
+                    "is_admin": is_admin,
                 }
 
                 # Envoi des données de l'utilisateur au contrôleur pour enregistrement
