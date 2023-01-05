@@ -81,7 +81,7 @@ class Login(QDialog):
         self.mainLayout.addWidget(self.groupBox, alignment=Qt.AlignCenter)
         self.mainLayout.setStretch(500, 500)
         self.setLayout(self.mainLayout)
-        self.show()
+        # self.show()
 
         # ******************************************************** #
         self.loginButton.clicked.connect(lambda: self.manageUserConnection())
@@ -101,7 +101,7 @@ class Login(QDialog):
         loginDialog.exec_()
 
     def connectTo(self,):
-        self.parent.show()
+        self.parent.startMainView()
         # passer details utilisateur qui est connecté
         self.close()
 
@@ -140,6 +140,7 @@ class Login(QDialog):
                 self.errorMsgLbl.setText("")
                 self.errorMsgLbl.setVisible(False)
                 # redirection
+                print(f"sss: {result[0][0]}")
                 SessionManager.setItem('userStorage', result[0][0])
                 self.connectTo()
             else:

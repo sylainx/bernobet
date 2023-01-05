@@ -13,9 +13,9 @@ from controllers.Controller import Controller
 
 class mainView(QMainWindow):
 
-    def __init__(self) -> None:
+    def __init__(self,parent) -> None:
         super().__init__()        
-        login = Login(self)
+        # login = Login(self)
         self.initialise_constants()
         self.controller = Controller(self.PATH_NAME)
         self.setWindowTitle(self.WINDOW_TITLE)
@@ -23,18 +23,22 @@ class mainView(QMainWindow):
         self.setWindowIcon(QIcon(self.WINDOW_ICON))
         # self.show()
         self.user_infos = dict()
-        self.display()
-        self.header_content()
-        self.sidebar_content()
-        self.bet_info_content()
-        self.get_user_datas()
+        
         self.content = QWidget()
         # self.content.setStyleSheet(
         #     "background-color: #FAFAFA;"
         # )
 
-        self.content.setLayout(self.container)
+        
         self.setCentralWidget(self.content)
+
+    def initialise(self):
+        self.display()
+        self.get_user_datas()
+        self.header_content()
+        self.sidebar_content()
+        self.bet_info_content()
+        self.content.setLayout(self.container)
 
     def display(self) -> None:
 
@@ -119,9 +123,8 @@ class mainView(QMainWindow):
         self.auth = QGroupBox()
         self.content_layout = QVBoxLayout()
 
-        self.user = QLabel(f"Joberno ")
-        print(f"USer infos: {self.user_infos}")
-        self.sold = QLabel(f" Solde : {0.0} Gourdes")
+        self.user = QLabel(f"{self.user_infos['username']} ")
+        self.sold = QLabel(f" Solde : {self.user_infos['balance']} Gourdes")
 
         # Ajout des widgets
         self.content_layout.addWidget(self.user)
@@ -145,16 +148,19 @@ class mainView(QMainWindow):
         self.grp = QGroupBox()
 
         self.subtitle_lbl = QLabel("Menu principal")
+    
         self.dashboard_btn = QPushButton("Dashboard")
-        self.account_btn = QPushButton("Compte")
         self.match_btn = QPushButton("Matchs")
+
+        self.account_btn = QPushButton("Compte")
 
         # Ajout des Widgets
         self.content_layout.addWidget(self.subtitle_lbl)
-
-        self.content_layout.addWidget(self.dashboard_btn)
+        if self.user_infos['is_admin']:
+            self.content_layout.addWidget(self.dashboard_btn)
+            self.content_layout.addWidget(self.match_btn)
+            
         self.content_layout.addWidget(self.account_btn)
-        self.content_layout.addWidget(self.match_btn)
 
         self.grp.setLayout(self.content_layout)
         # Ajout des composants dans le main_layout
@@ -430,10 +436,10 @@ class mainView(QMainWindow):
 
     def get_user_datas(self):
         user_id = SessionManager.getItem('userStorage')
-        if user_id and user_id > 0:
+        if user_id and int(user_id) > 0:
             where_data = f"id = {user_id}"
             result = self.controller.select(self.TABLE_NAME, where_data)
-
+            print(f" \n\n{result}\n\n")
             data = {
                 'last_name': result[0][1],
                 'first_name': result[0][2],
@@ -445,16 +451,12 @@ class mainView(QMainWindow):
                 'username': result[0][8],
                 'balance': result[0][9],
                 'status': result[0][10],
+                'is_admin': result[0][11],
             }
 
+            print(f" RESULR:  {result}")
             self.user_infos = data
-            self.initialisation()
-
+        
     def updateUserInfo (self):
         # self.user
         pass
-
-if __name__ == '__main__':
-    app = QApplication([])
-    main = mainView()
-    app.exec_()

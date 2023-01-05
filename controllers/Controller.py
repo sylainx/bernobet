@@ -65,7 +65,7 @@ class Controller:
             sql += f" WHERE {where}"
         if order_by:
             sql += f" ORDER BY {order_by}"
-        # Exécuter la commande SQL et récupérer les résultats
+        # Exécuter la commande SQL et récupérer les résultats        
         self.cursor.execute(sql)
         return self.cursor.fetchall()
 
