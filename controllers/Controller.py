@@ -1,4 +1,5 @@
 import sqlite3
+from PyQt5.QtWidgets import QMessageBox
 
 
 class Controller:
@@ -27,14 +28,15 @@ class Controller:
 
     def insert(self, table_name, values):
 
-        if not self.is_table_exist(table_name):
-            return  # La table n'est pas presente, on ne fait rien
+        if not self.is_table_exist(table_name):            
+            return # La table n'est pas presente, on ne fait rien
 
         # Générer la commande SQL pour insérer un enregistrement
         column_names = ", ".join([name for name, _ in values])
         placeholders = ", ".join(["?" for _, _ in values])
         sql = f"INSERT INTO {table_name} ({column_names}) VALUES ({placeholders})"
 
+        print(f"SQL: {sql}")
         # Exécuter la commande SQL avec les valeurs
         self.cursor.execute(sql, [value for _, value in values])
         
@@ -52,6 +54,8 @@ class Controller:
             # Data has been inserted successfully
             return inserted_id
         else:
+            QMessageBox.warning(
+                None, "Error", "Quelque chose ne va pas", QMessageBox.Ok)
             return False
 
     def select(self, table_name, where=None, order_by=None):
@@ -73,13 +77,17 @@ class Controller:
         # Générer la commande SQL pour mettre à jour un enregistrement
         updates = ", ".join([f"{name} = ?" for name, _ in values])
         sql = f"UPDATE {table_name} SET {updates} WHERE {where}"
-
+        print(f"UPD: {values}")
         # Exécuter la commande SQL avec les valeurs
         self.cursor.execute(sql, [value for _, value in values])
         self.conn.commit()
 
     def delete(self, table_name, where):
         # Générer la commande SQL pour supprimer un enregistrement
+
+        if not self.is_table_exist(table_name):
+            return  # La table n'est pas presente, on ne fait rien
+
         sql = f"DELETE FROM {table_name} WHERE {where}"
         # Exécuter la commande SQL
         self.cursor.execute(sql)
@@ -97,8 +105,15 @@ class Controller:
         self.conn.commit()
 
     def is_table_exist(self, table_name):
-        # Vérifier l'existence de la table
+         # Vérifier l'existence de la table
         self.cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'")
         if self.cursor.fetchone():
             return True  # La table est presente
+        return False
+
+    def table_structure(self, table_name):
+         # Vérifier l'existence de la table
+        self.cursor.execute(f"SELECT * FROM sqlite_master WHERE type='table' AND name='{table_name}'")
+        if self.cursor.fetchall():
+            return self.cursor.fetchall()  # La table est presente
         return False

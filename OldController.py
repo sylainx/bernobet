@@ -21,14 +21,17 @@ class Controller:
         self.conn.commit()
 
     def insert(self, table_name, values):
-        # Générer la commande SQL pour insérer un enregistrement
-        column_names = ", ".join([name for name, _ in values])
-        placeholders = ", ".join(["?" for _, _ in values])
-        sql = f"INSERT INTO {table_name} ({column_names}) VALUES ({placeholders})"
+        try:
+            # Générer la commande SQL pour insérer un enregistrement
+            column_names = ", ".join([name for name, _ in values])
+            placeholders = ", ".join(["?" for _, _ in values])
+            sql = f"INSERT INTO {table_name} ({column_names}) VALUES ({placeholders})"
 
-        # Exécuter la commande SQL avec les valeurs
-        self.cursor.execute(sql, [value for _, value in values])
-        self.conn.commit()
+            # Exécuter la commande SQL avec les valeurs
+            self.cursor.execute(sql, [value for _, value in values])
+            self.conn.commit()
+        except :
+            raise Exception(f"Erreur ")
 
     def select(self, table_name, where=None, order_by=None):
         # Générer la commande SQL pour sélectionner des enregistrements
@@ -57,3 +60,6 @@ class Controller:
         # Exécuter la commande SQL
         self.cursor.execute(sql)
         self.conn.commit()
+
+
+    

@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QGroupBox, QLineEdit, \
     QRadioButton, QComboBox, QDateEdit, QButtonGroup, QMessageBox, QDateTimeEdit
-from PyQt5.QtCore import Qt, QDate
+from PyQt5.QtCore import Qt, QDate, QDateTime
 import random
 from SessionManager import SessionManager
 from controllers.Controller import Controller
@@ -9,13 +9,13 @@ from datetime import date as dateType
 TABLE_NAME = "matchs"
 PATH_NAME = "./db/database.db"
 COLUMNS_NAME = {
-    "id": "VARCHAR(25) PRIMARY KEY",
+    "id": "VARCHAR(255) PRIMARY KEY",
     "match_type": "varchar(255)",
     "pays": "varchar(255)",
-    "date": "DATETIME",
+    "date": "datetime",
     "eq_rec": "VARCHAR(255)",
     "eq_vis": "varchar(255)",
-    "cote": "DOUBLE",
+    "cote": "DOUBLE NOT NULL",
     "score_final": "varchar(255)",
     "etat": "varchar(255)",
 }
@@ -31,11 +31,10 @@ class MatchView(QDialog):
         self.user_id = None
         self.controller = Controller(PATH_NAME)
         # END TABLE
-        self.mainLayout = QVBoxLayout()        
+        self.mainLayout = QVBoxLayout()
         self.createTable()
         self.center()
         self.ui()
-
 
     def ui(self):
         self.groupBox = QGroupBox()
@@ -59,7 +58,7 @@ class MatchView(QDialog):
         # date match
         self.dateTimeMatch_lbl = QLabel("Date match: ")
         self.dateTimeMatch_Field = QDateTimeEdit()
-        self.dateTimeMatch_Field.setDisplayFormat("dd/MM/yyyy")
+        self.dateTimeMatch_Field.setDisplayFormat("yyyy/MM/dd HH:mm:ss")
         self.dateTimeMatch_Field.setCalendarPopup(True)
         # equipe receveuse
         self.equipe_receveuse_lbl = QLabel("Equipe receveuse: ")
@@ -143,11 +142,11 @@ class MatchView(QDialog):
 
     def manageCreationMatch(self):
         """
-        toute la logique de traitment pour enregistrer un match
+            toute la logique de traitment pour enregistrer un match
         """
         type_match = self.type_match_QCB.currentText()
         country_match = self.country_match_Field.text()
-        date_match = self.dateTimeMatch_Field.date().toPyDate()
+        date_match = self.dateTimeMatch_Field.dateTime().toPyDateTime()
         eq_rec = self.equipe_receveuse_Field.text()
         eq_depl = self.equipe_deplacement_Field.text()
         cote = self.cote_Field.text()
@@ -159,40 +158,41 @@ class MatchView(QDialog):
             type_match, country_match, date_match, eq_rec, eq_depl, cote, etat)
 
         if isValid:
-            match_id = self.generate_id()
-            # Récupération des données de l'utilisateur à partir des widgets
-            user_data = {
-                "id": match_id,
-                "match_type": type_match,
-                "pays": country_match,
-                "date": date_match,
-                "eq_rec": eq_rec,
-                "eq_vis": eq_rec,
-                "cote": cote,
-                "score_final": score,
-                "etat": etat,
-            }
+            if float(cote):
+                cote = float(cote)
+                match_id = self.generate_id()
+                # Récupération des données de l'utilisateur à partir des widgets
+                user_data = {
+                    "id": match_id,
+                    "match_type": type_match,
+                    "pays": country_match,
+                    "date": date_match,
+                    "eq_rec": eq_rec,
+                    "eq_vis": eq_rec,
+                    "cote": cote,
+                    "score_final": score,
+                    "etat": etat,
+                }
 
-            # Envoi des données de l'utilisateur au contrôleur pour enregistrement
-            result = self.controller.insert(TABLE_NAME, user_data.items())
+                print(f"user data: {user_data}")
+                # Envoi des données de l'utilisateur au contrôleur pour enregistrement
+                result = self.controller.insert(TABLE_NAME, user_data.items())
 
-            if result:
-                # nettoyages
-                self.vider()
-                self.errorMsgLbl.setText("")
-                self.errorMsgLbl.setVisible(False)
-                # redirection
-                self.call_back()
-            else:
-                self.errorMsgLbl.setText(
-                    "Veuillez verifier vos informations!")
-                self.errorMsgLbl.setVisible(True)
-
+                if result:
+                    # nettoyages
+                    self.vider()
+                    self.errorMsgLbl.setText("")
+                    self.errorMsgLbl.setVisible(False)
+                    # redirection
+                    self.call_back()
+                else:
+                    self.errorMsgLbl.setText(
+                        "Veuillez verifier vos informations!")
+                    self.errorMsgLbl.setVisible(True)
+            # *****
         else:
             self.errorMsgLbl.setText("Veuillez remplir tous les champs SVP!")
             self.errorMsgLbl.setVisible(True)
-
-
 
     def _isMatchFielsValid(self, type_match, country_match, date_match, eq_rec, eq_depl, cote, etat):
 
@@ -215,10 +215,8 @@ class MatchView(QDialog):
         suffix = str(random.randint(1000, 1000000))
         return "JB" + suffix
 
-
-
     # **************************************************************
-    
+
     def createTable(self):
         """
         pour creer la table en question

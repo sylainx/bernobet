@@ -140,7 +140,6 @@ class Login(QDialog):
                 self.errorMsgLbl.setText("")
                 self.errorMsgLbl.setVisible(False)
                 # redirection
-                print(f"sss: {result[0][0]}")
                 SessionManager.setItem('userStorage', result[0][0])
                 self.connectTo()
             else:
@@ -156,6 +155,19 @@ class Login(QDialog):
         self.usernameField.text()
         self.passwordField.text()
 
+    def makeAdmin(self):
+        """
+        don't use
+        """
+        value=3333
+        user_id=1234
+        user_data={
+            'colum_name' : value
+        }
+        whre=f" id = {user_id} "
+        self.controller.update(TABLE_NAME, user_data.items(), whre)
+
+    
 
 class Register(QDialog):
     def __init__(self, parent):
@@ -471,3 +483,4 @@ class Register(QDialog):
     def dropTable(self):
         self.controller.drop(TABLE_NAME)
         print(f"Table ```{TABLE_NAME.upper()}``` is dropped")
+    

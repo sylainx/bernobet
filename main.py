@@ -2,9 +2,11 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QLabel, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QGroupBox, QLineEdit, QScrollArea
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
-import threading, time
+import threading
+import time
 from SessionManager import SessionManager
 from Views.MatchsView import MatchView
+from Views.users.UsersView import UserView
 from authentification import Login
 import functools
 
@@ -13,8 +15,8 @@ from controllers.Controller import Controller
 
 class mainView(QMainWindow):
 
-    def __init__(self,parent) -> None:
-        super().__init__()        
+    def __init__(self, parent) -> None:
+        super().__init__()
         # login = Login(self)
         self.initialise_constants()
         self.controller = Controller(self.PATH_NAME)
@@ -23,13 +25,12 @@ class mainView(QMainWindow):
         self.setWindowIcon(QIcon(self.WINDOW_ICON))
         # self.show()
         self.user_infos = dict()
-        
+
         self.content = QWidget()
         # self.content.setStyleSheet(
         #     "background-color: #FAFAFA;"
         # )
 
-        
         self.setCentralWidget(self.content)
 
     def initialise(self):
@@ -96,15 +97,19 @@ class mainView(QMainWindow):
 
         # Bouton pour les matchs
         self.match_btn = QPushButton("Matchs")
+        # self.match_btn.clicked.connect(lambda:self.displayParisCallback())
 
         # Bouton pour les paris
         self.bet_btn = QPushButton("Paris")
+        # self.bet_btn.clicked.connect(lambda:self.displayParisCallback())
 
         # Bouton pour les paiements
         self.payment_btn = QPushButton("Paiements")
+        # self.payment_btn.clicked.connect(lambda:self.displayParisCallback())
 
         # Bouton pour les comptes
         self.account_btn = QPushButton("Comptes")
+        self.account_btn.clicked.connect(lambda:self.displayUserAccountCallback())
 
         # Ajout des widgets
         self.content_layout.addWidget(self.logo)
@@ -148,18 +153,19 @@ class mainView(QMainWindow):
         self.grp = QGroupBox()
 
         self.subtitle_lbl = QLabel("Menu principal")
-    
+
         self.dashboard_btn = QPushButton("Dashboard")
         self.match_btn = QPushButton("Matchs")
 
         self.account_btn = QPushButton("Compte")
+        self.account_btn.clicked.connect(lambda:self.displayAdminListUsersCallback())
 
         # Ajout des Widgets
         self.content_layout.addWidget(self.subtitle_lbl)
         if self.user_infos['is_admin']:
             self.content_layout.addWidget(self.dashboard_btn)
             self.content_layout.addWidget(self.match_btn)
-            
+
         self.content_layout.addWidget(self.account_btn)
 
         self.grp.setLayout(self.content_layout)
@@ -256,14 +262,26 @@ class mainView(QMainWindow):
 
     def dashboard_content(self):
 
-        print(SessionManager.getItem('userStorage'))
         # Contenu du dashboard
         self.main_layout = QVBoxLayout()
+        self.main_layout.setAlignment(Qt.AlignTop)
         self.content_layout = QVBoxLayout()
+        self.content_layout.setAlignment(Qt.AlignTop)
 
         self.grp = QGroupBox()
 
-        self.subtitle_lbl = QLabel("Welcome to your dashboard")
+        self.subtitle_lbl = QLabel("Dashboard")
+
+        # widget()
+        self.box_dashboards = QWidget()
+        scrollLaout_DashboardMatch = QScrollArea()
+        scrollLaout_DashboardMatch.setWidgetResizable(True)
+        vLyt_list_Dashboard = QVBoxLayout()
+        scrollLaout_DashboardMatch.setWidget(self.box_dashboards)
+
+        # ******************** start box
+        box_dashboard = QWidget(self.box_dashboards)
+        # ******************** end box
 
         # Ajout des Widgets
         self.content_layout.addWidget(self.subtitle_lbl)
@@ -271,6 +289,8 @@ class mainView(QMainWindow):
 
         # Ajout des composants dans le main_layout
         self.body.setLayout(self.content_layout)
+
+        return self.main_layout
 
     def change_body_content(self, new_layout):
         # Récupération du layout actuel du QWidget "body"
@@ -296,17 +316,28 @@ class mainView(QMainWindow):
 
         self.subtitle_lbl = QLabel("Welcome to your account")
 
+        # widget()
+        scrollLaout_DashboardMatch = QScrollArea()
+        scrollLaout_DashboardMatch.setWidgetResizable(True)
+        self.box_accounts = QWidget()
+        vLyt_list_Dashboard = QVBoxLayout()
+        scrollLaout_DashboardMatch.setWidget(self.box_accounts)
+
+        # ******************** start box
+        box_dashboard = QWidget(self.box_accounts)
+        # ******************** end box
+
         # Ajout des Widgets
         self.account_content_layout.addWidget(self.subtitle_lbl)
         self.account_content_layout.setAlignment(Qt.AlignCenter)
 
         # Ajout des composants dans le main_layout
-        # self.body.setLayout(self.account_content_layout)
+        self.body.setLayout(self.account_content_layout)
 
         return self.account_content_layout
 
     def match_content(self):
-        
+
         matchView = MatchView(self)
 
         # Contenu du dashboard
@@ -320,8 +351,8 @@ class mainView(QMainWindow):
 
         #
         self.list_of_box_matchs = QWidget()
-        self.list_of_box_matchs.setContentsMargins(5,5,5,5)
-        
+        self.list_of_box_matchs.setContentsMargins(5, 5, 5, 5)
+
         scrollLayout_BoxMatch = QScrollArea()
         scrollLayout_BoxMatch.setWidgetResizable(True)
         vLyt_listBoxMatchs = QVBoxLayout()
@@ -329,7 +360,7 @@ class mainView(QMainWindow):
 
         # *********** start Boite mise en Page pour un match
         boxMatch_WDG = QWidget(self.list_of_box_matchs)
-        # 
+        #
         boxMatch_WDG.setStyleSheet(
             "background-color: rgb(94,101,102); border-radius: 5px;"
         )
@@ -367,7 +398,7 @@ class mainView(QMainWindow):
         hLyt_match.addWidget(self.eqDep_Lbl, alignment=Qt.AlignRight)
 
         # *********** end Boite mise en Page pour un match
-        
+
         # Ajout des Widgets
         vLyt_listBoxMatchs.addWidget(scrollLayout_BoxMatch)
         self.content_layout.addWidget(self.subtitle_lbl)
@@ -439,16 +470,15 @@ class mainView(QMainWindow):
         if user_id and int(user_id) > 0:
             where_data = f"id = {user_id}"
             result = self.controller.select(self.TABLE_NAME, where_data)
-            print(f" \n\n{result}\n\n")
             data = {
+                'id': result[0][0],
                 'last_name': result[0][1],
                 'first_name': result[0][2],
                 'gender': result[0][3],
                 'birth_date': result[0][4],
-                'gender': result[0][5],
-                'phone': result[0][6],
-                'nif': result[0][7],
-                'username': result[0][8],
+                'phone': result[0][5],
+                'nif': result[0][6],
+                'username': result[0][7],
                 'balance': result[0][9],
                 'status': result[0][10],
                 'is_admin': result[0][11],
@@ -456,7 +486,18 @@ class mainView(QMainWindow):
 
             print(f" RESULR:  {result}")
             self.user_infos = data
-        
-    def updateUserInfo (self):
+
+    def updateUserInfo(self):
         # self.user
         pass
+
+
+    # ==================================================
+
+    def displayUserAccountCallback(self):
+        print("User account is clicked")
+
+    def displayAdminListUsersCallback(self):
+        self.user_view = UserView(self)
+        self.user_view.refresh_datas()
+        
