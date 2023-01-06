@@ -39,7 +39,7 @@ class Controller:
         print(f"SQL: {sql}")
         # Exécuter la commande SQL avec les valeurs
         self.cursor.execute(sql, [value for _, value in values])
-        
+
         # Get the ID of the inserted row
         inserted_id = self.cursor.lastrowid
         # Execute a SELECT statement to retrieve the inserted row
@@ -62,7 +62,7 @@ class Controller:
 
         if not self.is_table_exist(table_name):
             return  # La table n'est pas presente, on ne fait rien
-            
+
         # Générer la commande SQL pour sélectionner des enregistrements
         sql = f"SELECT * FROM {table_name}"
         if where:

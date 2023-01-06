@@ -168,7 +168,6 @@ class Login(QDialog):
         self.controller.update(TABLE_NAME, user_data.items(), whre)
 
     
-
 class Register(QDialog):
     def __init__(self, parent):
         super(Register, self).__init__(parent)

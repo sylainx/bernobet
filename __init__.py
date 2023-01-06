@@ -16,7 +16,7 @@ from main import mainView
 class MainStart(QMainWindow):
 
     def __init__(self) -> None:
-        super().__init__()   
+        super().__init__()
         self.authentification =  Login(self)
         self.main = mainView(self)
         self.user_id = 0

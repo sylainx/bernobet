@@ -180,6 +180,28 @@ class UserView(QDialog):
         self.updateDataBtn.clicked.connect(lambda: self.manageUpdateUser())
         self.deleteDataBtn.clicked.connect(lambda: self.manageDeleteUser())
 
+    def connectTo(self,):
+        self.parent.show()
+        # passer details utilisateur qui est connecté
+        self.close()
+    # end connectTo
+
+    def center(self):
+        # Ajout de cette méthode pour centrer la fenêtre
+        frameGm = self.frameGeometry()
+        screen = QApplication.desktop().screenNumber(
+            QApplication.desktop().cursor().pos())
+        centerPoint = QApplication.desktop().screenGeometry(screen).center()
+        frameGm.moveCenter(centerPoint)
+        self.move(frameGm.topLeft())
+
+    def connect(self):
+        self.call_back()
+
+    def call_back(self):
+        self.parent.show()
+        self.close()
+
     def listTableWidget(self):
 
         self.table_WDG = QTableWidget()
@@ -224,6 +246,7 @@ class UserView(QDialog):
             self.load_datas(get_users)
         else:
             self.empty_data()
+    # end refresh_datas
 
     def empty_data(self,):
         """
@@ -231,28 +254,6 @@ class UserView(QDialog):
         """
         print("empty datas")
     # end empty_data
-
-    def connectTo(self,):
-        self.parent.show()
-        # passer details utilisateur qui est connecté
-        self.close()
-    # end connectTo
-
-    def center(self):
-        # Ajout de cette méthode pour centrer la fenêtre
-        frameGm = self.frameGeometry()
-        screen = QApplication.desktop().screenNumber(
-            QApplication.desktop().cursor().pos())
-        centerPoint = QApplication.desktop().screenGeometry(screen).center()
-        frameGm.moveCenter(centerPoint)
-        self.move(frameGm.topLeft())
-
-    def connect(self):
-        self.call_back()
-
-    def call_back(self):
-        self.parent.show()
-        self.close()
 
     # **************************************************************
 
@@ -359,7 +360,7 @@ class UserView(QDialog):
         self.code_user_QLE.text()
         self.last_name_Field.text()
         self.first_name_Field.text()
-        self.gender_QCB.text()
+        self.gender_QCB.setCurrentIndex(0)
         self.birth_date_lbl.text()
         self.phone_Field.text()
         self.nif_Field.text()
@@ -367,6 +368,9 @@ class UserView(QDialog):
         self.pwd_Field.text()
         self.confirm_pwd_Field.text()
         self.balance_Field.text()
+        self.noAdmin_QPB.setChecked(True)
+        self.status_QCB.setCurrentIndex(0)
+    # end vider()
 
     def eventOnTable(self):
 
@@ -429,7 +433,7 @@ class UserView(QDialog):
                 if float(balance):
                     balance = float(balance)
                     # Récupération des données de l'utilisateur à partir des widgets
-                    
+
                     user_data = {
                         "last_name": last_name,
                         "first_name": first_name,
@@ -480,11 +484,10 @@ class UserView(QDialog):
         """
         code_user = self.code_user_QLE.text()
         if code_user:
-            where_clause= f" id = {code_user} "
-            self.controller.delete(TABLE_NAME,where_clause)
+            where_clause = f" id = {code_user} "
+            self.controller.delete(TABLE_NAME, where_clause)
             self.vider()
             self.refresh_datas()
-
 
     def createTable(self):
         """

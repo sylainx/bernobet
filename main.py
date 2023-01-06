@@ -23,6 +23,7 @@ class mainView(QMainWindow):
         self.setWindowTitle(self.WINDOW_TITLE)
         self.setMinimumSize(1000, 600)
         self.setWindowIcon(QIcon(self.WINDOW_ICON))
+        
         # self.show()
         self.user_infos = dict()
 
@@ -311,24 +312,33 @@ class mainView(QMainWindow):
         # Contenu du dashboard
         self.main_layout = QVBoxLayout()
         self.account_content_layout = QVBoxLayout()
-
+        # self.account_content_layout.alignment(Qt.AlignTop)
         self.grp = QGroupBox()
 
         self.subtitle_lbl = QLabel("Welcome to your account")
 
         # widget()
-        scrollLaout_DashboardMatch = QScrollArea()
-        scrollLaout_DashboardMatch.setWidgetResizable(True)
-        self.box_accounts = QWidget()
-        vLyt_list_Dashboard = QVBoxLayout()
-        scrollLaout_DashboardMatch.setWidget(self.box_accounts)
+        # scrollLaout_DashboardMatch = QScrollArea()
+        # scrollLaout_DashboardMatch.setWidgetResizable(True)
+        # self.box_accounts = QWidget()
+        # vLyt_list_Dashboard = QVBoxLayout()
+        # scrollLaout_DashboardMatch.setWidget(self.box_accounts)
 
         # ******************** start box
-        box_dashboard = QWidget(self.box_accounts)
+        # title account
+        self.title_account_QLB = QLabel("Compte")
+        self.title_account_QLB.setStyleSheet("color: white;")
+        # match_id
+        self.match_id_lbl = QLabel("Id: ")
+        self.match_id_Field = QLineEdit()
+        self.match_id_Field.setStyleSheet("color: white;")
+        self.match_id_Field.setPlaceholderText("Saisir le pays")
         # ******************** end box
 
         # Ajout des Widgets
-        self.account_content_layout.addWidget(self.subtitle_lbl)
+        self.account_content_layout.addWidget(self.subtitle_lbl, Qt.AlignTop)
+        self.account_content_layout.addWidget(self.title_account_QLB)
+        self.account_content_layout.addWidget(self.match_id_Field)
         self.account_content_layout.setAlignment(Qt.AlignCenter)
 
         # Ajout des composants dans le main_layout
