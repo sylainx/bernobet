@@ -57,7 +57,7 @@ class Controller:
     def insert(self, table_name, values):
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-
+            
             if not self.is_table_exist(table_name):
                 return # La table n'est pas presente, on ne fait rien
 
@@ -69,23 +69,24 @@ class Controller:
             print(f"SQL: {sql}")
             # Exécuter la commande SQL avec les valeurs
         cursor.execute(sql, [value for _, value in values])
+        conn.commit()
 
         # Get the ID of the inserted row
         inserted_id = cursor.lastrowid
         # Execute a SELECT statement to retrieve the inserted row
-        cursor.execute(f"SELECT * FROM {table_name} WHERE id = {inserted_id}")
+        cursor.execute(f"SELECT * FROM {table_name} WHERE {values[0][0]} = {inserted_id}")
         conn.commit()
 
         # Fetch the inserted row
         inserted_row = cursor.fetchone()
         # Check the inserted row
-        if inserted_row:
+        # if inserted_row:
             # Data has been inserted successfully
-            return inserted_id
-        else:
-            QMessageBox.warning(
-                None, "Error", "Quelque chose ne va pas", QMessageBox.Ok)
-            return False
+        return inserted_id
+        # else:
+        #     QMessageBox.warning(
+        #         None, "Error", "Insertion - Quelque chose ne va pas", QMessageBox.Ok)
+        #     return False
 
     def update(self, table_name, values, where):
         with sqlite3.connect(self.db_path) as conn:

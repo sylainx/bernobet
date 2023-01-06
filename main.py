@@ -5,7 +5,8 @@ from PyQt5.QtCore import Qt
 import threading
 import time
 from SessionManager import SessionManager
-from Views.MatchsView import MatchView
+from Views.matchs.MatchsView import MatchView
+from Views.users.AccountView import AccountView
 from Views.users.UsersView import UserView
 from authentification import Login
 import functools
@@ -198,9 +199,7 @@ class mainView(QMainWindow):
         self.sidebar.setLayout(self.main_layout)
 
         # Evenements sur les boutons
-        self.dashboard_btn.clicked.connect(self.dashboard_content)
-        self.account_btn.clicked.connect(functools.partial(
-            self.change_body_content, self.account_content()))
+        self.dashboard_btn.clicked.connect(self.dashboard_content)        
         self.match_btn.clicked.connect(self.match_content)
         self.setting_btn.clicked.connect(self.setting_content)
         self.help_btn.clicked.connect(self.help_content)
@@ -303,7 +302,6 @@ class mainView(QMainWindow):
             if widget is not None:
                 widget.deleteLater()
 
-        # print(self.account_content())
         # Mise à jour du layout du QWidget "body"
         self.body.setLayout(new_layout)
 
@@ -312,44 +310,110 @@ class mainView(QMainWindow):
         # Contenu du dashboard
         self.main_layout = QVBoxLayout()
         self.account_content_layout = QVBoxLayout()
+        # self.hLyt_account = QHBoxLayout()
         # self.account_content_layout.alignment(Qt.AlignTop)
         self.grp = QGroupBox()
 
         self.subtitle_lbl = QLabel("Welcome to your account")
 
         # widget()
-        # scrollLaout_DashboardMatch = QScrollArea()
-        # scrollLaout_DashboardMatch.setWidgetResizable(True)
+        scrollLaout_Account = QScrollArea()
+        scrollLaout_Account.setWidgetResizable(True)
         # self.box_accounts = QWidget()
         # vLyt_list_Dashboard = QVBoxLayout()
-        # scrollLaout_DashboardMatch.setWidget(self.box_accounts)
+        scrollLaout_Account.setLayout(self.account_content_layout)
 
         # ******************** start box
         # title account
         self.title_account_QLB = QLabel("Compte")
         self.title_account_QLB.setStyleSheet("color: white;")
         # match_id
-        self.match_id_lbl = QLabel("Id: ")
-        self.match_id_Field = QLineEdit()
-        self.match_id_Field.setStyleSheet("color: white;")
-        self.match_id_Field.setPlaceholderText("Saisir le pays")
+        self.user_id_lbl = QLabel("Code: ")
+        self.user_id_Field = QLineEdit()
+        self.user_id_Field.setEnabled(False)
+        self.user_id_Field.setStyleSheet("color: white;")
+        # last name
+        self.last_name_lbl = QLabel("Last name: ")
+        self.last_name_Field = QLineEdit()
+        self.last_name_Field.setStyleSheet("color: white;")
+        self.last_name_Field.setPlaceholderText("Saisir le pays")
+        # first name
+        self.first_name_lbl = QLabel("Fist name: ")
+        self.first_name_Field = QLineEdit()
+        self.first_name_Field.setStyleSheet("color: white;")
+        self.first_name_Field.setPlaceholderText("Saisir le pays")
+        # gender
+        self.gender_lbl = QLabel("Gender: ")
+        self.gender_Field = QLineEdit()
+        self.gender_Field.setStyleSheet("color: white;")
+        self.gender_Field.setPlaceholderText("Saisir le pays")
+        # birth date
+        self.birth_date_lbl = QLabel("Date de naissance: ")
+        self.birth_date_Field = QLineEdit()
+        self.birth_date_Field.setStyleSheet("color: white;")
+        self.birth_date_Field.setPlaceholderText("Saisir le pays")
+        # phone
+        self.phone_lbl = QLabel("Tel: ")
+        self.phone_Field = QLineEdit()
+        self.phone_Field.setStyleSheet("color: white;")
+        self.phone_Field.setPlaceholderText("Saisir tel")
+        # username
+        self.username_lbl = QLabel("Id: ")
+        self.username_Field = QLineEdit()
+        self.username_Field.setStyleSheet("color: white;")
+        self.username_Field.setPlaceholderText("Saisir le pays")
+        # nif
+        self.nif_lbl = QLabel("Id: ")
+        self.nif_Field = QLineEdit()
+        self.nif_Field.setStyleSheet("color: white;")
+        self.nif_Field.setPlaceholderText("Saisir le pays")
+        # password
+        self.password_lbl = QLabel("Mot de passe: ")
+        self.password_Field = QLineEdit()
+        self.password_Field.setStyleSheet("color: white;")
+        self.password_Field.setPlaceholderText("Saisir le mot de passe")
+        # confirm_password
+        self.confirm_password_lbl = QLabel("Confirmer votre mot de passe: ")
+        self.confirm_password_Field = QLineEdit()
+        self.confirm_password_Field.setStyleSheet("color: white;")
+        self.confirm_password_Field.setPlaceholderText("Confirmer votre mot de passe")
+
+        self.updateInfoBtn = QPushButton()
+        self.updateInfoBtn.setStyleSheet("background:rgb(244,102,47); color: white; padding: 5px;")
         # ******************** end box
 
         # Ajout des Widgets
         self.account_content_layout.addWidget(self.subtitle_lbl, Qt.AlignTop)
-        self.account_content_layout.addWidget(self.title_account_QLB)
-        self.account_content_layout.addWidget(self.match_id_Field)
+        self.account_content_layout.addWidget(self.user_id_lbl)
+        self.account_content_layout.addWidget(self.user_id_Field)
+        self.account_content_layout.addWidget(self.username_lbl)
+        self.account_content_layout.addWidget(self.username_Field)
+        self.account_content_layout.addWidget(self.first_name_lbl)
+        self.account_content_layout.addWidget(self.first_name_Field)
+        self.account_content_layout.addWidget(self.last_name_lbl)
+        self.account_content_layout.addWidget(self.last_name_Field)
+        self.account_content_layout.addWidget(self.gender_lbl)
+        self.account_content_layout.addWidget(self.gender_Field)
+        self.account_content_layout.addWidget(self.birth_date_lbl)
+        self.account_content_layout.addWidget(self.birth_date_Field)
+        self.account_content_layout.addWidget(self.phone_lbl)
+        self.account_content_layout.addWidget(self.phone_Field)
+        self.account_content_layout.addWidget(self.nif_lbl)
+        self.account_content_layout.addWidget(self.nif_Field)
+        self.account_content_layout.addWidget(self.password_lbl)
+        self.account_content_layout.addWidget(self.password_Field)
+        self.account_content_layout.addWidget(self.confirm_password_lbl)
+        self.account_content_layout.addWidget(self.confirm_password_Field)
+        self.account_content_layout.addWidget(self.updateInfoBtn)
         self.account_content_layout.setAlignment(Qt.AlignCenter)
-
         # Ajout des composants dans le main_layout
         self.body.setLayout(self.account_content_layout)
-
         return self.account_content_layout
 
     def match_content(self):
 
         matchView = MatchView(self)
-
+        matchView.refresh_datas()
         # Contenu du dashboard
         self.main_layout = QVBoxLayout()
         self.main_layout.setAlignment(Qt.AlignTop)
@@ -494,7 +558,6 @@ class mainView(QMainWindow):
                 'is_admin': result[0][11],
             }
 
-            print(f" RESULR:  {result}")
             self.user_infos = data
 
     def updateUserInfo(self):
@@ -506,8 +569,10 @@ class mainView(QMainWindow):
 
     def displayUserAccountCallback(self):
         print("User account is clicked")
+        self.ui_account_user = AccountView(self)
+        self.ui_account_user.refresh_datas()
 
     def displayAdminListUsersCallback(self):
-        self.user_view = UserView(self)
-        self.user_view.refresh_datas()
+        self.ui_admin_user_view = UserView(self)
+        self.ui_admin_user_view.refresh_datas()
         

@@ -4,7 +4,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
 import threading, time
 from SessionManager import SessionManager
-from Views.MatchsView import MatchView
+from Views.matchs.MatchsView import MatchView
 from authentification import Login
 import functools
 

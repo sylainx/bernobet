@@ -148,10 +148,10 @@ class UserView(QDialog):
         self.verticalLayout.addWidget(self.phone_Field)
         self.verticalLayout.addWidget(self.nif_lbl)
         self.verticalLayout.addWidget(self.nif_Field)
-        self.verticalLayout.addWidget(self.pwd_lbl)
-        self.verticalLayout.addWidget(self.pwd_Field)
-        self.verticalLayout.addWidget(self.confirm_pwd_lbl)
-        self.verticalLayout.addWidget(self.confirm_pwd_Field)
+        # self.verticalLayout.addWidget(self.pwd_lbl)
+        # self.verticalLayout.addWidget(self.pwd_Field)
+        # self.verticalLayout.addWidget(self.confirm_pwd_lbl)
+        # self.verticalLayout.addWidget(self.confirm_pwd_Field)
         self.verticalLayout.addWidget(self.balance_lbl)
         self.verticalLayout.addWidget(self.balance_Field)
         self.verticalLayout.addWidget(self.status_lbl)
@@ -279,8 +279,9 @@ class UserView(QDialog):
         phone = self.phone_Field.text()
         nif = self.nif_Field.text()
         username = self.username_Field.text()
-        pwd = self.pwd_Field.text()
-        cpwd = self.confirm_pwd_Field.text()
+        pwd = 1234
+        # pwd = self.pwd_Field.text()
+        # cpwd = self.confirm_pwd_Field.text()
         etat = self.status_QCB.currentText()
         balance = self.gender_QCB.currentText()
         # ternary : TrueValue if cond else FalseValue
@@ -289,60 +290,57 @@ class UserView(QDialog):
         self.errorMsgLbl.setVisible(False)
 
         if self._isFormFielsValid(
-                code_user, last_name, first_name, gender, birth_date, phone, nif, username, pwd, cpwd, etat, balance):
+                code_user, last_name, first_name, gender, birth_date, phone, nif, username, etat, balance):
 
-            if pwd == cpwd:
+            if float(balance):
+                balance = float(balance)
+                # Récupération des données de l'utilisateur à partir des widgets
+                user_data = {
+                    "last_name": last_name,
+                    "first_name": first_name,
+                    "gender": gender,
+                    "birth_date": birth_date,
+                    "phone": phone,
+                    "nif": nif,
+                    "username": username,
+                    "password": pwd,
+                    "balance": balance,
+                    "status": etat,
+                    "is_admin": admin,
+                }
 
-                if float(balance):
-                    balance = float(balance)
-                    # Récupération des données de l'utilisateur à partir des widgets
-                    user_data = {
-                        "last_name": last_name,
-                        "first_name": first_name,
-                        "gender": gender,
-                        "birth_date": birth_date,
-                        "phone": phone,
-                        "nif": nif,
-                        "username": username,
-                        "password": pwd,
-                        "balance": balance,
-                        "status": etat,
-                        "is_admin": admin,
-                    }
+                print(f"user data: {user_data}")
+                # Envoi des données de l'utilisateur au contrôleur pour enregistrement
+                result = self.controller.insert(
+                    TABLE_NAME, user_data.items())
 
-                    print(f"user data: {user_data}")
-                    # Envoi des données de l'utilisateur au contrôleur pour enregistrement
-                    result = self.controller.insert(
-                        TABLE_NAME, user_data.items())
-
-                    result = None
-                    if result:
-                        # nettoyages
-                        self.vider()
-                        self.refresh_datas()
-                        self.errorMsgLbl.setText("")
-                        self.errorMsgLbl.setVisible(False)
-                        # redirection
-                        # self.call_back()
-                    else:
-                        self.errorMsgLbl.setText(
-                            "Veuillez verifier vos informations!")
-                        self.errorMsgLbl.setVisible(True)
-                # *****
+                result = None
+                if result:
+                    # nettoyages
+                    self.vider()
+                    self.refresh_datas()
+                    self.errorMsgLbl.setText("")
+                    self.errorMsgLbl.setVisible(False)
+                    # redirection
+                    # self.call_back()
                 else:
-                    print("Le montant est inforrect")
+                    self.errorMsgLbl.setText(
+                        "Veuillez verifier vos informations!")
+                    self.errorMsgLbl.setVisible(True)
             # *****
             else:
-                print("Les mots de passe ne correspondent pas")
+                print("Le montant est inforrect")
+           
         else:
             self.errorMsgLbl.setText("Veuillez remplir tous les champs SVP!")
             self.errorMsgLbl.setVisible(True)
 
-    def _isFormFielsValid(self, code_user, last_name, first_name, gender, birth_date, phone, nif, username, pwd, cpwd, etat, balance):
+    def _isFormFielsValid(self, code_user, last_name, first_name, gender, birth_date, phone, nif, username, etat, balance):
 
         if code_user != "" and last_name != "" and first_name != "" and gender != "" and \
-            birth_date != "" and phone != "" and nif != "" and username != "" and pwd != "" \
-                and cpwd != "" and etat != "" and balance != "":
+            birth_date != "" and phone != "" and nif != "" and username != "" \
+                and etat != "" and balance != "":
+            
             return True
 
         return False
@@ -417,8 +415,8 @@ class UserView(QDialog):
         phone = self.phone_Field.text()
         nif = self.nif_Field.text()
         username = self.username_Field.text()
-        pwd = self.pwd_Field.text()
-        cpwd = self.confirm_pwd_Field.text()
+        # pwd = self.pwd_Field.text()
+        # cpwd = self.confirm_pwd_Field.text()
         etat = self.status_QCB.currentText()
         balance = self.balance_Field.text()
         # ternary : a if cond else b
@@ -426,53 +424,50 @@ class UserView(QDialog):
         self.errorMsgLbl.setVisible(False)
 
         if self._isFormFielsValid(
-                code_user, last_name, first_name, gender, birth_date, phone, nif, username, pwd, cpwd, etat, balance):
+                code_user,last_name, first_name, gender, birth_date, phone, nif, username, etat, balance):
 
-            if pwd == cpwd:
+            if float(balance):
+                balance = float(balance)
+                # Récupération des données de l'utilisateur à partir des widgets
 
-                if float(balance):
-                    balance = float(balance)
-                    # Récupération des données de l'utilisateur à partir des widgets
+                user_data = [
+                    ("last_name", last_name),
+                    ("first_name", first_name),
+                    ("gender", gender),
+                    ("birth_date", birth_date),
+                    ("phone", phone),
+                    ("nif", nif),
+                    ("username", username),
+                    ("balance", balance),
+                    ("status", etat),
+                    ("is_admin", admin)
+                ]
+                
+                where_data = f"id = {code_user}"
 
-                    user_data = {
-                        "last_name": last_name,
-                        "first_name": first_name,
-                        "gender": gender,
-                        "birth_date": birth_date,
-                        "phone": phone,
-                        "nif": nif,
-                        "username": username,
-                        "password": pwd,
-                        "balance": balance,
-                        "status": etat,
-                        "is_admin": admin,
-                    }
+                print(f"user data: {user_data}")
 
-                    where_data = f"id = {code_user}"
-
-                    print(f"user data: {user_data}")
-                    # Envoi des données de l'utilisateur au contrôleur pour enregistrement
-                    result = self.controller.update(
-                        TABLE_NAME, user_data, where_data)
-                    result = None
-                    if result:
-                        # nettoyages
-                        self.vider()
-                        self.refresh_datas()
-                        self.errorMsgLbl.setText("")
-                        self.errorMsgLbl.setVisible(False)
-                        # redirection
-                        # self.call_back()
-                    else:
-                        self.errorMsgLbl.setText(
-                            "Veuillez verifier vos informations!")
-                        self.errorMsgLbl.setVisible(True)
-                # *****
+                # Envoi des données de l'utilisateur au contrôleur pour enregistrement
+                result = self.controller.update(
+                    TABLE_NAME, user_data, where_data)
+                
+                if result:
+                    # nettoyages
+                    self.vider()
+                    self.refresh_datas()
+                    self.errorMsgLbl.setText("")
+                    self.errorMsgLbl.setVisible(False)
+                    # redirection
+                    # self.call_back()
                 else:
-                    print("Le montant est inforrect")
+                    self.errorMsgLbl.setText(
+                        "Veuillez verifier vos informations!")
+                    self.errorMsgLbl.setVisible(True)
             # *****
             else:
-                print("Les mots de passe ne correspondent pas")
+                print("Le montant est inforrect")
+        # *****
+        
         else:
             self.errorMsgLbl.setText("Veuillez remplir tous les champs SVP!")
             self.errorMsgLbl.setVisible(True)
