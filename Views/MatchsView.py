@@ -229,7 +229,7 @@ class MatchView(QDialog):
                 cote = float(cote)
                 match_id = self.generate_id()
                 # Récupération des données de l'utilisateur à partir des widgets
-                user_data = {
+                match_data = {
                     "id": match_id,
                     "match_type": type_match,
                     "pays": country_match,
@@ -241,9 +241,9 @@ class MatchView(QDialog):
                     "etat": etat,
                 }
 
-                print(f"user data: {user_data}")
+                print(f"match data: {match_data}")
                 # Envoi des données de l'utilisateur au contrôleur pour enregistrement
-                result = self.controller.insert(TABLE_NAME, user_data.items())
+                result = self.controller.insert(TABLE_NAME, match_data.items())
 
                 if result:
                     # nettoyages
