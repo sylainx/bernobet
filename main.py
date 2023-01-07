@@ -438,7 +438,7 @@ class mainView(QMainWindow):
         boxMatch_WDG.setStyleSheet(
             "background-color: rgb(94,101,102); border-radius: 5px;"
         )
-        hLyt_match = QHBoxLayout(boxMatch_WDG)
+        hLyt_Boxmatch = QHBoxLayout(boxMatch_WDG)
         # left box
         self.eqDom_Lbl = QLabel("Equipe 1")
         self.eqDom_Lbl.setStyleSheet(
@@ -450,13 +450,13 @@ class mainView(QMainWindow):
             "color: #f4661b;"
             "font: 12px;"
         )
-        hLyt_match.addWidget(self.eqDom_Lbl, alignment=Qt.AlignLeft)
-        hLyt_match.addWidget(self.quote1_Lbl, alignment=Qt.AlignLeft)
+        hLyt_Boxmatch.addWidget(self.eqDom_Lbl, alignment=Qt.AlignLeft)
+        hLyt_Boxmatch.addWidget(self.quote1_Lbl, alignment=Qt.AlignLeft)
         # center box
         self.eqScore_Lbl = QLabel(f"[ {0}-{0} ]")
         self.eqScore_Lbl.setStyleSheet(
             "color: rgb(255,255,255); padding: 2px; font: 16px bold;")
-        hLyt_match.addWidget(self.eqScore_Lbl)
+        hLyt_Boxmatch.addWidget(self.eqScore_Lbl)
         # right box
         self.eqDep_Lbl = QLabel("Equipe 2")
         self.eqDep_Lbl.setStyleSheet(
@@ -468,9 +468,8 @@ class mainView(QMainWindow):
             "color: #f4661b;"
             "font: 12px;"
         )
-        hLyt_match.addWidget(self.quote2_Lbl, alignment=Qt.AlignRight)
-        hLyt_match.addWidget(self.eqDep_Lbl, alignment=Qt.AlignRight)
-
+        hLyt_Boxmatch.addWidget(self.quote2_Lbl, alignment=Qt.AlignRight)
+        hLyt_Boxmatch.addWidget(self.eqDep_Lbl, alignment=Qt.AlignRight)
         # *********** end Boite mise en Page pour un match
 
         # Ajout des Widgets

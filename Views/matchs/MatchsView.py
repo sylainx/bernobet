@@ -161,7 +161,7 @@ class MatchView(QDialog):
         self.table_WDG = QTableWidget()
         self.table_WDG.setStyleSheet("background-color: #667373;color: white")
         self.table_WDG.cellClicked.connect(lambda: self.eventOnTable())
-        header = ("ID", "Type", "Equipes", "Date",
+        header = ("ID", "Type", "Equipes", "Pays", "Date",
                   "Cote", "Score", "Etat")
 
         self.table_WDG.setColumnCount(len(header))
@@ -169,27 +169,24 @@ class MatchView(QDialog):
         # add layout
         self.mainLayout.addWidget(self.table_WDG)
 
-    def load_datas(self, list_users):
+    def load_datas(self, list_datas):
         """
         cette fonction va remplir le tableau avec des elements
         - Arguments:
-            - list_users : `list[()]`
+            - list_datas : `list[()]`
         - Return `NoneType`
         """
-        self.table_WDG.setRowCount(len(list_users))
-        # self.table_WDG.setStyleSheet(
-        #   "background-color: #2C2C2C;\n"
-        # )
-
+        self.table_WDG.setRowCount(len(list_datas))
+       
         row = 0
-
-        for i in list_users:
+        for i in list_datas:
+            
             self.table_WDG.setItem(row, 0, QTableWidgetItem(str(i[0])))
             self.table_WDG.setItem(
                 row, 1, QTableWidgetItem(str(f"{i[1]}")))
-            self.table_WDG.setItem(row, 2, QTableWidgetItem(str(i[2])))
+            self.table_WDG.setItem(row, 2, QTableWidgetItem(str(f"{i[4]} - {i[5]}")))
             self.table_WDG.setItem(
-                row, 3, QTableWidgetItem(str(f"{i[4]} - {i[5]}")))
+                row, 3, QTableWidgetItem(str(f"{i[2]}")))
             self.table_WDG.setItem(row, 4, QTableWidgetItem(str(i[3])))
             self.table_WDG.setItem(row, 5, QTableWidgetItem(str(i[6])))
             self.table_WDG.setItem(row, 6, QTableWidgetItem(str(i[7])))
@@ -390,11 +387,10 @@ class MatchView(QDialog):
         index = self.table_WDG.currentRow()
         id = self.table_WDG.item(index, 0).text()
         if id:
-            where_clause = f" id= {id}"
+            where_clause = f" id= '{id}'"
             row = self.controller.select(TABLE_NAME, where_clause)
             if row:
                 # fill form
-
                 self.match_id_Field.setText(str(row[0][0]))
                 self.type_match_QCB.setCurrentText(str(row[0][1]))
                 self.country_match_Field.setText(str(row[0][2]))

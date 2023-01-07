@@ -38,6 +38,7 @@ class Controller:
                 sql += f" WHERE {where}"
             if order_by:
                 sql += f" ORDER BY {order_by}"
+            print(f"select controller {sql}")
             # Exécuter la commande SQL et récupérer les résultats
             cursor.execute(sql)
             return cursor.fetchall()
