@@ -154,13 +154,13 @@ class mainView(QMainWindow):
 
     def sidebar_content(self):
 
-        # Menu principal
+        # Espace administration
         self.main_layout = QVBoxLayout()
         self.content_layout = QVBoxLayout()
 
         self.grp = QGroupBox()
 
-        self.subtitle_lbl = QLabel("Menu principal")
+        self.subtitle_lbl = QLabel("Espace administration")
 
         self.dashboard_btn = QPushButton("Dashboard")
         self.match_btn = QPushButton("Matchs")
@@ -212,7 +212,7 @@ class mainView(QMainWindow):
         self.about_btn.clicked.connect(lambda: self.about_content())
 
     def bet_info_content(self):
-        # Menu principal
+        # pariages
         self.main_layout = QVBoxLayout()
         self.content_layout = QVBoxLayout()
         grid_Lyt = QGridLayout()
@@ -221,6 +221,7 @@ class mainView(QMainWindow):
 
         # teams
         self.subtitle_lbl = QLabel("Informations du pariage")
+        self.subtitle_lbl.setStyleSheet("font:16px;  color: white")
         self.bet_amount_lbl = QLabel("Montant du pariage : ")
         #
         self.eq_1 = QLabel()
@@ -261,7 +262,7 @@ class mainView(QMainWindow):
         self.bet_win_value_lbl = QLabel(f"{300.00} Gourdes")
 
         # Ajout des Widgets
-        self.content_layout.addWidget(self.subtitle_lbl)
+        self.content_layout.addWidget(self.subtitle_lbl, Qt.AlignCenter)
         # grid layout
         grid_Lyt.addWidget(self.eq_1, 0, 0)
         grid_Lyt.addWidget(self.eq_2, 0, 1)
@@ -469,6 +470,7 @@ class mainView(QMainWindow):
 
         matchView = MatchView(self)
         matchView.refresh_datas()
+        self.refresh_dashboard()
         # Contenu du dashboard
         self.main_layout = QVBoxLayout()
         self.main_layout.setAlignment(Qt.AlignTop)
@@ -673,7 +675,13 @@ class mainView(QMainWindow):
         self.ui_admin_user_view.refresh_datas()
 
     def goToBetBoxCallback(self, btn: QPushButton):
-
+        """
+            Mettre a jour certaines donnees placer un pari. 
+            Réf. fonction `bet_info_content` 
+            Arguments:
+                - `btn: QPushButton` -> le bouton cliqué
+            
+        """
         obj_name = btn.objectName()
         print(f"Match id : {obj_name}")
         #
@@ -690,3 +698,12 @@ class mainView(QMainWindow):
             # fill inputs
             self.eq_1.setText(match_info['eq_rec'])
             self.eq_2.setText(match_info['eq_vis'])
+
+    def refresh_dashboard(self):
+
+        """
+            - Mettre a jour les données du Dashboard :
+                - Username
+                - balance
+        """
+        print("To refresh dashboard")

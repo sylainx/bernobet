@@ -355,17 +355,17 @@ class UserView(QDialog):
         self.updateDataBtn.setEnabled(False)
         self.deleteDataBtn.setEnabled(False)
 
-        self.code_user_QLE.text()
-        self.last_name_Field.text()
-        self.first_name_Field.text()
+        self.code_user_QLE.clear()
+        self.last_name_Field.clear()
+        self.first_name_Field.clear()
         self.gender_QCB.setCurrentIndex(0)
-        self.birth_date_lbl.text()
-        self.phone_Field.text()
-        self.nif_Field.text()
-        self.username_Field.text()
-        self.pwd_Field.text()
-        self.confirm_pwd_Field.text()
-        self.balance_Field.text()
+        self.birth_date_lbl.clear()
+        self.phone_Field.clear()
+        self.nif_Field.clear()
+        self.username_Field.clear()
+        self.pwd_Field.clear()
+        self.confirm_pwd_Field.clear()
+        self.balance_Field.clear()
         self.noAdmin_QPB.setChecked(True)
         self.status_QCB.setCurrentIndex(0)
     # end vider()
@@ -419,8 +419,6 @@ class UserView(QDialog):
         # cpwd = self.confirm_pwd_Field.text()
         etat = self.status_QCB.currentText()
         balance = self.balance_Field.text()
-        # ternary : a if cond else b
-        admin = 1 if self.get_isAdminChoice() else 0
         self.errorMsgLbl.setVisible(False)
 
         if self._isFormFielsValid(
@@ -440,7 +438,6 @@ class UserView(QDialog):
                     ("username", username),
                     ("balance", balance),
                     ("status", etat),
-                    ("is_admin", admin)
                 ]
                 
                 where_data = f"id = {code_user}"

@@ -17,7 +17,7 @@ from controllers.Controller import Controller
 TABLE_NAME = "matchs"
 PATH_NAME = "./db/database.db"
 COLUMNS_NAME = {
-    "id": "VARCHAR(255) PRIMARY KEY",
+    "id": "VARCHAR(255) PRIMARY KEY AUTOINCREMENT",
     "match_type": "varchar(255)",
     "pays": "varchar(255)",
     "date": "datetime",
@@ -29,18 +29,17 @@ COLUMNS_NAME = {
 }
 
 
-class MatchsController ():
+class BetsController ():
 
     def __init__(self) -> None:
-        self.TABLE_NAME=TABLE_NAME
-        self.controller = Controller(PATH_NAME)
+        self.TABLE_NAME="bets"
+        self.controller = Controller("./db/database.db")
 
 
     
-    def get_available_matchs(self):
+    def get_available_bets(self):
         """
         Lister tous les disponibles
-
         """
 
         whre_values = f" etat == 'N' "
