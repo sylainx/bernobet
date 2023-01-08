@@ -1,6 +1,8 @@
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QLabel, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QGroupBox, QLineEdit, QScrollArea
-from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QLabel, QWidget, \
+    QHBoxLayout, QVBoxLayout, QPushButton, QGroupBox, QLineEdit,\
+    QScrollArea, QButtonGroup
+from PyQt5.QtGui import QIcon, QIntValidator, QDoubleValidator
 from PyQt5.QtCore import Qt
 import threading
 import time
@@ -12,6 +14,7 @@ from authentification import Login
 import functools
 
 from controllers.Controller import Controller
+from controllers.MatchsController import MatchsController
 
 
 class mainView(QMainWindow):
@@ -24,7 +27,8 @@ class mainView(QMainWindow):
         self.setWindowTitle(self.WINDOW_TITLE)
         self.setMinimumSize(1000, 600)
         self.setWindowIcon(QIcon(self.WINDOW_ICON))
-        
+        self.match_controller = MatchsController()
+
         # self.show()
         self.user_infos = dict()
 
@@ -59,6 +63,7 @@ class mainView(QMainWindow):
         self.body.setStyleSheet(
             "background-color: #6e7575"
         )
+        # add
 
         self.bet_info = QWidget(self)
 
@@ -99,7 +104,7 @@ class mainView(QMainWindow):
 
         # Bouton pour les matchs
         self.match_btn = QPushButton("Matchs")
-        # self.match_btn.clicked.connect(lambda:self.displayParisCallback())
+        self.match_btn.clicked.connect(lambda: self.available_match_content())
 
         # Bouton pour les paris
         self.bet_btn = QPushButton("Paris")
@@ -111,7 +116,8 @@ class mainView(QMainWindow):
 
         # Bouton pour les comptes
         self.account_btn = QPushButton("Comptes")
-        self.account_btn.clicked.connect(lambda:self.displayUserAccountCallback())
+        self.account_btn.clicked.connect(
+            lambda: self.displayUserAccountCallback())
 
         # Ajout des widgets
         self.content_layout.addWidget(self.logo)
@@ -160,15 +166,15 @@ class mainView(QMainWindow):
         self.match_btn = QPushButton("Matchs")
 
         self.account_btn = QPushButton("Compte")
-        self.account_btn.clicked.connect(lambda:self.displayAdminListUsersCallback())
+        self.account_btn.clicked.connect(
+            lambda: self.displayAdminListUsersCallback())
 
         # Ajout des Widgets
         self.content_layout.addWidget(self.subtitle_lbl)
         if self.user_infos['is_admin']:
             self.content_layout.addWidget(self.dashboard_btn)
             self.content_layout.addWidget(self.match_btn)
-
-        self.content_layout.addWidget(self.account_btn)
+            self.content_layout.addWidget(self.account_btn)
 
         self.grp.setLayout(self.content_layout)
         # Ajout des composants dans le main_layout
@@ -199,27 +205,50 @@ class mainView(QMainWindow):
         self.sidebar.setLayout(self.main_layout)
 
         # Evenements sur les boutons
-        self.dashboard_btn.clicked.connect(self.dashboard_content)        
-        self.match_btn.clicked.connect(self.match_content)
-        self.setting_btn.clicked.connect(self.setting_content)
-        self.help_btn.clicked.connect(self.help_content)
-        self.about_btn.clicked.connect(self.about_content)
+        self.dashboard_btn.clicked.connect(lambda: self.dashboard_content())
+        self.match_btn.clicked.connect(lambda: self.admin_match_content())
+        self.setting_btn.clicked.connect(lambda: self.setting_content())
+        self.help_btn.clicked.connect(lambda: self.help_content())
+        self.about_btn.clicked.connect(lambda: self.about_content())
 
     def bet_info_content(self):
         # Menu principal
         self.main_layout = QVBoxLayout()
         self.content_layout = QVBoxLayout()
+        grid_Lyt = QGridLayout()
 
         self.grp = QGroupBox()
 
+        # teams
         self.subtitle_lbl = QLabel("Informations du pariage")
         self.bet_amount_lbl = QLabel("Montant du pariage : ")
+        #
+        self.eq_1 = QLabel()
+        self.eq_1.setVisible(False)
+        self.eq_2 = QLabel()
+        self.eq_2.setVisible(False)
+        self.usr_scr1 = QLineEdit()
+        self.usr_scr1.setValidator(QIntValidator(0, 10, self))
+        self.usr_scr1.setPlaceholderText(
+            "Score 1")
+        self.usr_scr1.setVisible(False)
+        self.usr_scr2 = QLineEdit()
+        self.usr_scr2.setVisible(False)
+        self.usr_scr2.setValidator(QIntValidator(0, 10, self))
+        self.usr_scr2.setPlaceholderText(
+            "Score 1")
         self.bet_amount_field = QLineEdit()
+        self.bet_amount_field.setText(str(25))
+        self.bet_amount_field.setStyleSheet("border-radius: 5px; height:20px; border: 1px solid #FBFBFB")
+        self.bet_amount_field.setValidator(
+            QDoubleValidator(0.0, 75000.0, 2, self))
         self.bet_amount_field.setPlaceholderText(
             "Saisir le montant du pariage")
         self.account_btn = QPushButton("Parier")
         self.account_btn.setStyleSheet(
             "background-color: #f4661b;"
+            "border-radius: 5px;"
+            "padding: 5px 1pxh;"
         )
 
         self.bet_h_layout = QHBoxLayout()
@@ -233,6 +262,14 @@ class mainView(QMainWindow):
 
         # Ajout des Widgets
         self.content_layout.addWidget(self.subtitle_lbl)
+        # grid layout
+        grid_Lyt.addWidget(self.eq_1, 0, 0)
+        grid_Lyt.addWidget(self.eq_2, 0, 1)
+        grid_Lyt.addWidget(self.usr_scr1, 1, 0)
+        grid_Lyt.addWidget(self.usr_scr2, 1, 1)
+
+        self.content_layout.addLayout(grid_Lyt)
+        # grid layout
         self.content_layout.addWidget(self.bet_amount_lbl)
         self.content_layout.addWidget(self.bet_amount_field)
         self.content_layout.addWidget(self.account_btn)
@@ -376,10 +413,12 @@ class mainView(QMainWindow):
         self.confirm_password_lbl = QLabel("Confirmer votre mot de passe: ")
         self.confirm_password_Field = QLineEdit()
         self.confirm_password_Field.setStyleSheet("color: white;")
-        self.confirm_password_Field.setPlaceholderText("Confirmer votre mot de passe")
+        self.confirm_password_Field.setPlaceholderText(
+            "Confirmer votre mot de passe")
 
         self.updateInfoBtn = QPushButton()
-        self.updateInfoBtn.setStyleSheet("background:rgb(244,102,47); color: white; padding: 5px;")
+        self.updateInfoBtn.setStyleSheet(
+            "background:rgb(244,102,47); color: white; padding: 5px;")
         # ******************** end box
 
         # Ajout des Widgets
@@ -410,7 +449,23 @@ class mainView(QMainWindow):
         self.body.setLayout(self.account_content_layout)
         return self.account_content_layout
 
-    def match_content(self):
+    def vertica_scroll_layout(self, parent: QWidget = None):
+        """
+            - Dynamic vertical scroll the parent widget
+            - Argument:
+                - `parent`: `QWidget`
+            - Return `QVBoxLayout`
+        """
+        # scrollable
+        scroll_vLyt = QScrollArea(verticalScrollBarPolicy=Qt.ScrollBarAlwaysOn)
+        scroll_vLyt.setWidgetResizable(True)
+        # widget container in ScrollArea
+        container_widget = QWidget(parent)
+        vLyt_container = QVBoxLayout()
+        scroll_vLyt.setWidget(container_widget)
+        return vLyt_container
+
+    def admin_match_content(self):
 
         matchView = MatchView(self)
         matchView.refresh_datas()
@@ -422,64 +477,107 @@ class mainView(QMainWindow):
         self.grp = QGroupBox()
 
         self.subtitle_lbl = QLabel("Liste des matchs")
+        # add to layout
 
-        #
-        self.list_of_box_matchs = QWidget()
-        self.list_of_box_matchs.setContentsMargins(5, 5, 5, 5)
-
-        scrollLayout_BoxMatch = QScrollArea()
-        scrollLayout_BoxMatch.setWidgetResizable(True)
-        vLyt_listBoxMatchs = QVBoxLayout()
-        scrollLayout_BoxMatch.setWidget(self.list_of_box_matchs)
-
-        # *********** start Boite mise en Page pour un match
-        boxMatch_WDG = QWidget(self.list_of_box_matchs)
-        #
-        boxMatch_WDG.setStyleSheet(
-            "background-color: rgb(94,101,102); border-radius: 5px;"
-        )
-        hLyt_Boxmatch = QHBoxLayout(boxMatch_WDG)
-        # left box
-        self.eqDom_Lbl = QLabel("Equipe 1")
-        self.eqDom_Lbl.setStyleSheet(
-            "color: rgb(255,255,255);"
-            "font: 16px bold;"
-        )
-        self.quote1_Lbl = QLabel("1.5")
-        self.quote1_Lbl.setStyleSheet(
-            "color: #f4661b;"
-            "font: 12px;"
-        )
-        hLyt_Boxmatch.addWidget(self.eqDom_Lbl, alignment=Qt.AlignLeft)
-        hLyt_Boxmatch.addWidget(self.quote1_Lbl, alignment=Qt.AlignLeft)
-        # center box
-        self.eqScore_Lbl = QLabel(f"[ {0}-{0} ]")
-        self.eqScore_Lbl.setStyleSheet(
-            "color: rgb(255,255,255); padding: 2px; font: 16px bold;")
-        hLyt_Boxmatch.addWidget(self.eqScore_Lbl)
-        # right box
-        self.eqDep_Lbl = QLabel("Equipe 2")
-        self.eqDep_Lbl.setStyleSheet(
-            "color: rgb(255,255,255);"
-            "font: 16px bold;"
-        )
-        self.quote2_Lbl = QLabel("2.5")
-        self.quote2_Lbl.setStyleSheet(
-            "color: #f4661b;"
-            "font: 12px;"
-        )
-        hLyt_Boxmatch.addWidget(self.quote2_Lbl, alignment=Qt.AlignRight)
-        hLyt_Boxmatch.addWidget(self.eqDep_Lbl, alignment=Qt.AlignRight)
-        # *********** end Boite mise en Page pour un match
-
-        # Ajout des Widgets
-        vLyt_listBoxMatchs.addWidget(scrollLayout_BoxMatch)
         self.content_layout.addWidget(self.subtitle_lbl)
-        self.content_layout.addWidget(self.list_of_box_matchs)
         self.content_layout.setAlignment(Qt.AlignTop)
 
         # Ajout des composants dans le main_layout
         self.body.setLayout(self.content_layout)
+    # end match_contents
+
+    def available_match_content(self):
+
+        # Contenu du dashboard
+        self.main_layout = QVBoxLayout()
+        self.main_layout.setAlignment(Qt.AlignTop)
+        self.content_layout = QVBoxLayout()
+        self.content_layout.setAlignment(Qt.AlignTop)
+        self.grp = QGroupBox()
+
+        self.subtitle_lbl = QLabel("Liste des matchs")
+        #
+        # Ajout des Widgets
+        self.content_layout.addWidget(self.subtitle_lbl)
+
+        # Ajout des composants dans le main_layout
+        self.body.setLayout(self.content_layout)
+
+        # =================== LIST MATCHS ===================
+
+        list_datas = self.match_controller.get_available_matchs()
+        if list_datas:
+            self.loadListMatchs(list_datas)
+        else:
+            print(f"No matchs found")
+    # end match_contents
+
+    def loadListMatchs(self, list_matchs):
+
+        # self.list_of_box_matchs = QWidget()
+        # self.list_of_box_matchs.setContentsMargins(5, 5, 5, 5)
+        # self.vLyt_listBoxMatchs = QVBoxLayout()
+
+        self.group_lineMatch_QGB = QButtonGroup()
+
+        scrl_Lyt = self.vertica_scroll_layout()
+
+        if list_matchs:
+            for match in list_matchs:
+                # *********** start Boite mise en Page pour un match
+
+                boxMatch_WDG = QWidget()
+                boxMatch_WDG.setObjectName(f"{match['match_id']}")
+                self.send2Bet_Btn = QPushButton("Parier")
+                self.send2Bet_Btn.setStyleSheet(
+                    "background-color: #f4661b;"
+                    "border-radius: 2px;"
+                    "padding: 2px 5px;"
+                )
+                self.send2Bet_Btn.setContentsMargins(0,0,0,0)
+                self.send2Bet_Btn.setObjectName(f"{match['match_id']}")
+                self.group_lineMatch_QGB.addButton(self.send2Bet_Btn)
+
+                #
+                boxMatch_WDG.setStyleSheet(
+                    "background-color: rgb(94,101,102); border-radius: 5px;"
+                )
+                hLyt_Boxmatch = QHBoxLayout(boxMatch_WDG)
+                # left box
+                self.eqDom_Lbl = QLabel(f"{match['eq_rec']}")
+                self.eqDom_Lbl.setStyleSheet(
+                    "color: rgb(255,255,255);"
+                    "font: 16px bold;"
+                )
+
+                hLyt_Boxmatch.addWidget(self.eqDom_Lbl, alignment=Qt.AlignLeft)
+                
+                # center box
+                self.eqScore_Lbl = QLabel(
+                    f"[ {match['scr_1']} - {match['scr_2']} ]")
+                self.eqScore_Lbl.setStyleSheet(
+                    "color: rgb(255,255,255); padding: 2px; font: 16px bold;")
+                hLyt_Boxmatch.addWidget(self.eqScore_Lbl)
+                # right box
+                self.eqDep_Lbl = QLabel(f"{match['eq_vis']}")
+                self.eqDep_Lbl.setStyleSheet(
+                    "color: rgb(255,255,255);"
+                    "font: 16px bold;"
+                )
+                
+                hLyt_Boxmatch.addWidget(
+                    self.eqDep_Lbl, alignment=Qt.AlignRight)
+                hLyt_Boxmatch.addWidget(
+                    self.send2Bet_Btn, alignment=Qt.AlignRight)
+                # *********** end Boite mise en Page pour un match
+                scrl_Lyt.addWidget(boxMatch_WDG)
+                # self.group_lineMatch_QGB.setLayout(boxMatch_WDG)
+
+            self.content_layout.addLayout(scrl_Lyt)
+
+            # ======== A C T I O N S  ========
+            self.group_lineMatch_QGB.buttonClicked.connect(
+                lambda x: self.goToBetBoxCallback(x))
 
     def setting_content(self):
 
@@ -563,7 +661,6 @@ class mainView(QMainWindow):
         # self.user
         pass
 
-
     # ==================================================
 
     def displayUserAccountCallback(self):
@@ -574,4 +671,22 @@ class mainView(QMainWindow):
     def displayAdminListUsersCallback(self):
         self.ui_admin_user_view = UserView(self)
         self.ui_admin_user_view.refresh_datas()
-        
+
+    def goToBetBoxCallback(self, btn: QPushButton):
+
+        obj_name = btn.objectName()
+        print(f"Match id : {obj_name}")
+        #
+        if not obj_name:
+            None
+
+        match_info = self.match_controller.get_match_by_id(obj_name)
+        if match_info:
+            print(f"---> {match_info}")
+            self.eq_1.setVisible(True)
+            self.eq_2.setVisible(True)
+            self.usr_scr1.setVisible(True)
+            self.usr_scr2.setVisible(True)
+            # fill inputs
+            self.eq_1.setText(match_info['eq_rec'])
+            self.eq_2.setText(match_info['eq_vis'])

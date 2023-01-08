@@ -72,23 +72,11 @@ class Controller:
         cursor.execute(sql, [value for _, value in values])
         conn.commit()
 
-        # Get the ID of the inserted row
-        inserted_id = cursor.lastrowid
-        # Execute a SELECT statement to retrieve the inserted row
-        cursor.execute(f"SELECT * FROM {table_name} WHERE {values[0][0]} = {inserted_id}")
-        conn.commit()
-
-        # Fetch the inserted row
-        inserted_row = cursor.fetchone()
-        # Check the inserted row
-        # if inserted_row:
-            # Data has been inserted successfully
-        return inserted_id
+        return True
         # else:
         #     QMessageBox.warning(
         #         None, "Error", "Insertion - Quelque chose ne va pas", QMessageBox.Ok)
-        #     return False
-
+        
     def update(self, table_name, values, where):
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
@@ -144,5 +132,18 @@ class Controller:
 
             cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'")
             return cursor.fetchone() is not None  # La table existe si fetchone() retourne un résultat
+
+    def delete(self, table_name, where):
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+
+            if not self.is_table_exist(table_name):
+                return  # La table n'est pas presente, on ne fait rien
+            
+            # Générer la commande SQL pour supprimer un enregistrement
+            sql = f"DELETE FROM {table_name} WHERE {where}"
+            # Exécuter la commande SQL
+            cursor.execute(sql)
+            conn.commit()
 
 

@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QGroupBox, QLineEdit, \
     QRadioButton, QComboBox, QDateEdit, QButtonGroup, QMessageBox, QDateTimeEdit, QTableWidget, QTableWidgetItem
-from PyQt5.QtCore import Qt, QDate, QDateTime
+from PyQt5.QtCore import Qt, QDate, QLocale
 from PyQt5.QtGui import QDoubleValidator
 import random
 from SessionManager import SessionManager
@@ -44,7 +44,7 @@ class MatchView(QDialog):
         self.groupBox.setMinimumSize(300, 600)
         self.verticalLayout = QVBoxLayout()
         self.horizontalLayout = QHBoxLayout()
-        
+
         # enregistrer match
         self.lbl_title_match = QLabel("Enregistrer un match: ")
         self.lbl_title_match.setStyleSheet("text-align: center;")
@@ -52,7 +52,8 @@ class MatchView(QDialog):
         self.match_id_lbl = QLabel("Id: ")
         self.match_id_Field = QLineEdit()
         self.match_id_Field.setEnabled(False)
-        self.match_id_Field.setPlaceholderText("Cette valeur sera ajoutée automatique")
+        self.match_id_Field.setPlaceholderText(
+            "Cette valeur sera ajoutée automatique")
         # type de match
         typeMatch = ['Championnat', 'Coupe du monde', 'Eliminatoire', 'Amical']
         self.type_match_lbl = QLabel("Type de match: ")
@@ -77,6 +78,13 @@ class MatchView(QDialog):
         # cote
         self.cote_lbl = QLabel("Cote: ")
         self.cote_Field = QLineEdit()
+        # 2 => nombre apres virgule,
+        self.cote_Field.setValidator(QDoubleValidator(0, 5, 2, self))
+        # score
+        self.score_lbl = QLabel("Score: ")
+        self.score_Field = QLineEdit()
+        self.score_Field.setText("0:0")
+        self.score_Field.setEnabled(False)
         # self.cote_Field.setValidator(self.doubleValidator)
         # etat
         self.etat_lbl = QLabel("Etat: ")
@@ -109,6 +117,8 @@ class MatchView(QDialog):
         self.verticalLayout.addWidget(self.equipe_receveuse_Field)
         self.verticalLayout.addWidget(self.equipe_deplacement_lbl)
         self.verticalLayout.addWidget(self.equipe_deplacement_Field)
+        self.verticalLayout.addWidget(self.score_lbl)
+        self.verticalLayout.addWidget(self.score_Field)
         self.verticalLayout.addWidget(self.cote_lbl)
         self.verticalLayout.addWidget(self.cote_Field)
         self.verticalLayout.addWidget(self.etat_lbl)
@@ -177,14 +187,15 @@ class MatchView(QDialog):
         - Return `NoneType`
         """
         self.table_WDG.setRowCount(len(list_datas))
-       
+
         row = 0
         for i in list_datas:
-            
+
             self.table_WDG.setItem(row, 0, QTableWidgetItem(str(i[0])))
             self.table_WDG.setItem(
                 row, 1, QTableWidgetItem(str(f"{i[1]}")))
-            self.table_WDG.setItem(row, 2, QTableWidgetItem(str(f"{i[4]} - {i[5]}")))
+            self.table_WDG.setItem(
+                row, 2, QTableWidgetItem(str(f"{i[4]} - {i[5]}")))
             self.table_WDG.setItem(
                 row, 3, QTableWidgetItem(str(f"{i[2]}")))
             self.table_WDG.setItem(row, 4, QTableWidgetItem(str(i[3])))
@@ -225,9 +236,10 @@ class MatchView(QDialog):
         self.errorMsgLbl.setVisible(False)
 
         isValid = self._isMatchFielsValid(
-            type_match, country_match, date_match, eq_rec, eq_depl, cote, etat)
+            type_match, country_match, date_match, eq_rec, eq_depl, cote, score, etat)
 
         if isValid:
+            cote = cote.replace(",",".")
             if float(cote):
                 cote = float(cote)
                 match_id = self.generate_id()
@@ -248,7 +260,7 @@ class MatchView(QDialog):
                 result = self.controller.insert(TABLE_NAME, match_data.items())
 
                 # if result:
-                    # nettoyages
+                # nettoyages
                 self.vider()
                 self.refresh_datas()
                 self.errorMsgLbl.setText("")
@@ -262,22 +274,27 @@ class MatchView(QDialog):
             # *****
             else:
                 print("Error: cote not convert")
-                self.errorMsgLbl.setText("Le cote doit etre un nombre decimal!")
+                self.errorMsgLbl.setText(
+                    "Le cote doit etre un nombre decimal!")
                 self.errorMsgLbl.setVisible(True)
         else:
             print("Error: not valid")
             self.errorMsgLbl.setText("Veuillez remplir tous les champs SVP!")
             self.errorMsgLbl.setVisible(True)
 
-    def _isMatchFielsValid(self, type_match, country_match, date_match, eq_rec, eq_depl, cote:str, etat):
+    def _isMatchFielsValid(self, type_match, country_match, date_match, eq_rec, eq_depl, cote: str, etat, score=None):
 
         if type_match != "" and country_match != "" and date_match != "" and \
                 eq_rec != "" and eq_depl != "" and cote != "" and etat != "":
-            
-            if cote.isnumeric():
+
+            if score:
+                # traitement will be here
+                print("score here")
                 return True
-
-
+            else:
+                print("score not here")
+                return True
+            print(f"type cote: {type(cote)}")
         return False
 
     def type_de_match_pressed(self):
@@ -285,8 +302,22 @@ class MatchView(QDialog):
         return False
 
     def vider(self):
-        self.country_match_Field.text()
-        self.dateTimeMatch_Field.text()
+        # btn
+        self.updateDataBtn.setEnabled(False)
+        self.deleteDataBtn.setEnabled(False)
+        # lineEdit
+        self.score_Field.setEnabled(False)
+        self.errorMsgLbl.setVisible(False)
+        # fields
+        self.match_id_Field.clear()
+        self.type_match_QCB.setCurrentIndex(0)
+        self.country_match_Field.clear()
+        self.equipe_receveuse_Field.clear()
+        self.dateTimeMatch_Field.clear()
+        self.equipe_deplacement_Field.clear()
+        self.cote_Field.clear()
+        self.etat_QCB.setCurrentIndex(0)
+        self.errorMsgLbl.clear()
 
     def generate_id(self,):
         # Génère un nombre entier aléatoire compris entre 1 et 1000000
@@ -298,71 +329,61 @@ class MatchView(QDialog):
         """
             Logiques de traitment pour modifier un utilisateur
         """
-        code_user = self.code_user_QLE.text()
-        last_name = self.last_name_Field.text()
-        first_name = self.first_name_Field.text()
-        gender = self.gender_QCB.currentText()
-        birth_date = self.birth_date_QDTM.dateTime().toPyDateTime()
-        phone = self.phone_Field.text()
-        nif = self.nif_Field.text()
-        username = self.username_Field.text()
-        pwd = self.pwd_Field.text()
-        cpwd = self.confirm_pwd_Field.text()
-        etat = self.status_QCB.currentText()
-        balance = self.balance_Field.text()
-        # ternary : a if cond else b
-        admin = 1 if self.get_isAdminChoice() else 0
+        type_match = self.type_match_QCB.currentText()
+        country_match = self.country_match_Field.text()
+        date_match = self.dateTimeMatch_Field.dateTime().toPyDateTime()
+        eq_rec = self.equipe_receveuse_Field.text()
+        eq_depl = self.equipe_deplacement_Field.text()
+        cote = self.cote_Field.text()
+        etat = self.etat_QCB.currentText()
+        score = self.score_Field.text()
         self.errorMsgLbl.setVisible(False)
 
-        if self._isFormFielsValid(
-                code_user, last_name, first_name, gender, birth_date, phone, nif, username, pwd, cpwd, etat, balance):
+        isValid = self._isMatchFielsValid(
+            type_match, country_match, date_match, eq_rec, eq_depl, score, cote, etat)
 
-            if pwd == cpwd:
+        if isValid:
+            if float(cote):
+                cote = float(cote)
+                match_id = self.generate_id()
+                # Récupération des données de l'utilisateur à partir des widgets
+                match_data = [
+                    ("match_type", type_match),
+                    ("pays", country_match),
+                    ("date", date_match),
+                    ("eq_rec", eq_rec),
+                    ("eq_vis", eq_rec),
+                    ("cote", cote),
+                    ("score_final", score),
+                    ("etat", etat),
+                ]
 
-                if float(balance):
-                    balance = float(balance)
-                    # Récupération des données de l'utilisateur à partir des widgets
+                whre_id = f"id= '{match_id}'"
+                
+                # Envoi des données de l'utilisateur au contrôleur pour enregistrement
+                result = self.controller.update(
+                    TABLE_NAME, match_data, whre_id)
 
-                    user_data = {
-                        "last_name": last_name,
-                        "first_name": first_name,
-                        "gender": gender,
-                        "birth_date": birth_date,
-                        "phone": phone,
-                        "nif": nif,
-                        "username": username,
-                        "password": pwd,
-                        "balance": balance,
-                        "status": etat,
-                        "is_admin": admin,
-                    }
-
-                    where_data = f"id = {code_user}"
-
-                    print(f"user data: {user_data}")
-                    # Envoi des données de l'utilisateur au contrôleur pour enregistrement
-                    result = self.controller.update(
-                        TABLE_NAME, user_data, where_data)
-                    result = None
-                    if result:
-                        # nettoyages
-                        self.vider()
-                        self.refresh_datas()
-                        self.errorMsgLbl.setText("")
-                        self.errorMsgLbl.setVisible(False)
-                        # redirection
-                        # self.call_back()
-                    else:
-                        self.errorMsgLbl.setText(
-                            "Veuillez verifier vos informations!")
-                        self.errorMsgLbl.setVisible(True)
-                # *****
-                else:
-                    print("Le montant est inforrect")
+                # if result:
+                # nettoyages
+                self.vider()
+                self.refresh_datas()
+                self.errorMsgLbl.setText("")
+                self.errorMsgLbl.setVisible(False)
+                # redirection
+                # self.call_back()
+                # else:
+                #     self.errorMsgLbl.setText(
+                #         "Veuillez verifier vos informations!")
+                #     self.errorMsgLbl.setVisible(True)
             # *****
             else:
-                print("Les mots de passe ne correspondent pas")
+                print("Error: cote not convert")
+                self.errorMsgLbl.setText(
+                    "Le cote doit etre un nombre decimal!")
+                self.errorMsgLbl.setVisible(True)
         else:
+            print("Error: not valid")
             self.errorMsgLbl.setText("Veuillez remplir tous les champs SVP!")
             self.errorMsgLbl.setVisible(True)
 
@@ -371,9 +392,9 @@ class MatchView(QDialog):
         """
             Logiques de traitment pour supprimer un utilisateur
         """
-        code_user = self.code_user_QLE.text()
-        if code_user:
-            where_clause = f" id = {code_user} "
+        match_id = self.match_id_Field.text()
+        if match_id:
+            where_clause = f" id = '{match_id}' "
             self.controller.delete(TABLE_NAME, where_clause)
             self.vider()
             self.refresh_datas()
@@ -383,6 +404,8 @@ class MatchView(QDialog):
         self.saveDataBtn.setEnabled(False)
         self.updateDataBtn.setEnabled(True)
         self.deleteDataBtn.setEnabled(True)
+        # open score
+        self.score_Field.setEnabled(True)
 
         index = self.table_WDG.currentRow()
         id = self.table_WDG.item(index, 0).text()
