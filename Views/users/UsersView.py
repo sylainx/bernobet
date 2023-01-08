@@ -309,7 +309,7 @@ class UserView(QDialog):
                     "is_admin": admin,
                 }
 
-                print(f"user data: {user_data}")
+                # print(f"user data: {user_data}")
                 # Envoi des données de l'utilisateur au contrôleur pour enregistrement
                 result = self.controller.insert(
                     TABLE_NAME, user_data.items())

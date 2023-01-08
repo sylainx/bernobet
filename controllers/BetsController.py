@@ -1,4 +1,5 @@
 
+import random
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QLabel, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QGroupBox, QLineEdit, QScrollArea
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
@@ -122,3 +123,11 @@ class BetsController ():
             return dict_match
 
         return None
+
+    
+    def generate_id(self,):
+        # Génère un nombre entier aléatoire compris entre 1 et 1000000
+        suffix = str(random.randint(1000, 1000000))
+        return "BET_" + suffix
+
+    # **************************************************************

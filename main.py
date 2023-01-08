@@ -7,6 +7,7 @@ from PyQt5.QtCore import Qt
 import threading
 import time
 from SessionManager import SessionManager
+from Views.PaymentsView import PaymentsView
 from Views.matchs.MatchsView import MatchView
 from Views.users.AccountView import AccountView
 from Views.users.UsersView import UserView
@@ -112,7 +113,7 @@ class mainView(QMainWindow):
 
         # Bouton pour les paiements
         self.payment_btn = QPushButton("Paiements")
-        # self.payment_btn.clicked.connect(lambda:self.displayParisCallback())
+        self.payment_btn.clicked.connect(lambda:self.displayAdminPaymentsCallback())
 
         # Bouton pour les comptes
         self.account_btn = QPushButton("Comptes")
@@ -164,17 +165,17 @@ class mainView(QMainWindow):
 
         self.dashboard_btn = QPushButton("Dashboard")
         self.match_btn = QPushButton("Matchs")
-
         self.account_btn = QPushButton("Compte")
-        self.account_btn.clicked.connect(
-            lambda: self.displayAdminListUsersCallback())
+        self.adm_payments_btn = QPushButton("Paiements")
+        
 
         # Ajout des Widgets
-        self.content_layout.addWidget(self.subtitle_lbl)
         if self.user_infos['is_admin']:
+            self.content_layout.addWidget(self.subtitle_lbl)
             self.content_layout.addWidget(self.dashboard_btn)
             self.content_layout.addWidget(self.match_btn)
             self.content_layout.addWidget(self.account_btn)
+            self.content_layout.addWidget(self.adm_payments_btn)
 
         self.grp.setLayout(self.content_layout)
         # Ajout des composants dans le main_layout
@@ -205,6 +206,10 @@ class mainView(QMainWindow):
         self.sidebar.setLayout(self.main_layout)
 
         # Evenements sur les boutons
+        self.account_btn.clicked.connect(
+            lambda: self.displayAdminListUsersCallback())
+        self.adm_payments_btn.clicked.connect(
+            lambda: self.displayAdminPaymentsCallback())
         self.dashboard_btn.clicked.connect(lambda: self.dashboard_content())
         self.match_btn.clicked.connect(lambda: self.admin_match_content())
         self.setting_btn.clicked.connect(lambda: self.setting_content())
@@ -674,6 +679,10 @@ class mainView(QMainWindow):
         self.ui_admin_user_view = UserView(self)
         self.ui_admin_user_view.refresh_datas()
 
+    def displayAdminPaymentsCallback(self):
+        self.ui_adm_payments = PaymentsView(self)
+        self.ui_adm_payments.refresh_datas()
+
     def goToBetBoxCallback(self, btn: QPushButton):
         """
             Mettre a jour certaines donnees placer un pari. 
@@ -700,7 +709,6 @@ class mainView(QMainWindow):
             self.eq_2.setText(match_info['eq_vis'])
 
     def refresh_dashboard(self):
-
         """
             - Mettre a jour les données du Dashboard :
                 - Username
