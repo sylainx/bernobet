@@ -13,7 +13,7 @@ class BetsView(QDialog):
         super(BetsView, self).__init__(parent)
         self.parent = parent
         self.setWindowTitle("Payments - JetBrainsBet")
-        self.setMinimumSize(1000, 600)
+        self.setMinimumSize(900, 600)
         self.mainLayout = QHBoxLayout()
         self.bets_controller = BetsController()
         self.user_contr = UsersController()

@@ -86,8 +86,8 @@ class AccountView(QDialog):
         # birth date
         # min date
         self.min_date = QDate.currentDate().addYears(-18)
-        self.birth_date_QDTM.setMaximumDate(self.min_date)
-        self.birth_date_QDTM.setKeyboardTracking(False)
+        self.birth_date_Field.setMaximumDate(self.min_date)
+        self.birth_date_Field.setKeyboardTracking(False)
         self.birth_date_lbl = QLabel("Date de naissance: ")
         self.birth_date_Field = QDateEdit()
         self.birth_date_Field.setDisplayFormat("yyyy/MM/dd")
