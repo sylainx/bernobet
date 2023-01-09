@@ -250,7 +250,7 @@ class MatchView(QDialog):
                     "pays": country_match,
                     "date": date_match,
                     "eq_rec": eq_rec,
-                    "eq_vis": eq_rec,
+                    "eq_vis": eq_depl,
                     "cote": cote,
                     "score_final": score,
                     "etat": etat,

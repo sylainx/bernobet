@@ -1,15 +1,6 @@
 
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QLabel, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QGroupBox, QLineEdit, QScrollArea, QDialog
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import Qt
-import threading, time
-from SessionManager import SessionManager
-from Views.matchs.MatchsView import MatchView
+from PyQt5.QtWidgets import QApplication, QMainWindow
 from authentification import Login
-import functools
-
-from controllers.Controller import Controller
-from authentification import Login, Register
 from main import mainView
 
 

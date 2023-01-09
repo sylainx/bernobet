@@ -27,5 +27,6 @@
             "name": "bernobet",
             "group": "python"
         }
-    ]
+    ],
+    "sqltools.useNodeRuntime": true
 }

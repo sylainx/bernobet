@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QHBoxLayout, QLa
     QRadioButton, QComboBox, QDateEdit, QButtonGroup, QMessageBox, QDateTimeEdit, QTableWidget, QTableWidgetItem, QScrollArea
 from PyQt5.QtCore import Qt, QDate, QDateTime
 from PyQt5.QtGui import QDoubleValidator
-import random
+from Helpers import Helpers
 from SessionManager import SessionManager
 from controllers.Controller import Controller
 from datetime import datetime
@@ -40,10 +40,12 @@ class UserView(QDialog):
         self.center()
         self.ui()
         self.listTableWidget()
+        self.func_help = Helpers()
 
     def ui(self):
         self.groupBox = QGroupBox()
         self.groupBox.setMinimumSize(350, 600)
+        self.groupBox.setContentsMargins(0, 0, 0, 0)
 
         scrollVertLayout = QScrollArea()
         scrollVertLayout.setWidgetResizable(True)
@@ -74,11 +76,16 @@ class UserView(QDialog):
         genders = ["Masculin", "Feminin"]
         self.gender_QCB = QComboBox()
         self.gender_QCB.addItems(genders)
+
+        # min date
+        self.min_date = QDate.currentDate().addYears(-18)
         # birth date
-        self.birth_date_lbl = QLabel("Equipe receveuse: ")
+        self.birth_date_lbl = QLabel("Dade de naissance: ")
         self.birth_date_QDTM = QDateEdit()
         self.birth_date_QDTM.setDisplayFormat("dd/MM/yyyy")
         self.birth_date_QDTM.setCalendarPopup(True)
+        self.birth_date_QDTM.setMaximumDate(self.min_date)
+        self.birth_date_QDTM.setKeyboardTracking(False)
         # phone
         self.phone_lbl = QLabel("Tel: ")
         self.phone_Field = QLineEdit()
@@ -132,6 +139,8 @@ class UserView(QDialog):
         # self.verticalLayout.addWidget(
         #     self.lbl_title_match, alignment=Qt.AlignCenter)
         # fields
+        # error
+        self.verticalLayout.addWidget(self.errorMsgLbl, alignment=Qt.AlignCenter)
         self.verticalLayout.addWidget(self.code_user_lbl)
         self.verticalLayout.addWidget(self.code_user_QLE)
         self.verticalLayout.addWidget(self.last_name_lbl)
@@ -159,8 +168,7 @@ class UserView(QDialog):
         self.verticalLayout.addWidget(self.isAdmin_lbl)
         self.verticalLayout.addWidget(self.yesAdmin_QPB)
         self.verticalLayout.addWidget(self.noAdmin_QPB)
-        # error
-        self.verticalLayout.addWidget(self.errorMsgLbl)
+        
 
         self.horizontalLayout.addWidget(self.saveDataBtn)
         self.horizontalLayout.addWidget(self.updateDataBtn)
@@ -262,9 +270,8 @@ class UserView(QDialog):
             Determiner quel RadioButton est selectionnee
             `isAdmin`
         """
-        selected_btn = self.groupe_admin_RDB.checkedButton()
-        if selected_btn and selected_btn.lower() == 'yes'.lower():
-            return True
+        if self.yesAdmin_QPB.isChecked():
+            return True            
         return False
 
     def manageCreationUser(self):
@@ -291,45 +298,54 @@ class UserView(QDialog):
 
         if self._isFormFielsValid(
                 code_user, last_name, first_name, gender, birth_date, phone, nif, username, etat, balance):
+            if QDate.fromString(birth_date, "dd/MM/yyyy") > self.min_date:
+                MIN_VALUE = 25
+                MAX_VALUE = 1000000
+                if self.func_help.is_float_in_range(balance,MAX_VALUE, MAX_VALUE):
+                    balance = float(balance)
+                    # Récupération des données de l'utilisateur à partir des widgets
+                    user_data = {
+                        "last_name": last_name,
+                        "first_name": first_name,
+                        "gender": gender,
+                        "birth_date": birth_date,
+                        "phone": phone,
+                        "nif": nif,
+                        "username": username,
+                        "password": pwd,
+                        "balance": balance,
+                        "status": etat,
+                        "is_admin": admin,
+                    }
 
-            if float(balance):
-                balance = float(balance)
-                # Récupération des données de l'utilisateur à partir des widgets
-                user_data = {
-                    "last_name": last_name,
-                    "first_name": first_name,
-                    "gender": gender,
-                    "birth_date": birth_date,
-                    "phone": phone,
-                    "nif": nif,
-                    "username": username,
-                    "password": pwd,
-                    "balance": balance,
-                    "status": etat,
-                    "is_admin": admin,
-                }
+                    # print(f"user data: {user_data}")
+                    # Envoi des données de l'utilisateur au contrôleur pour enregistrement
+                    result = self.controller.insert(
+                        TABLE_NAME, user_data.items())
 
-                # print(f"user data: {user_data}")
-                # Envoi des données de l'utilisateur au contrôleur pour enregistrement
-                result = self.controller.insert(
-                    TABLE_NAME, user_data.items())
-
-                result = None
-                if result:
-                    # nettoyages
-                    self.vider()
-                    self.refresh_datas()
-                    self.errorMsgLbl.setText("")
-                    self.errorMsgLbl.setVisible(False)
-                    # redirection
-                    # self.call_back()
+                    result = None
+                    if result:
+                        # nettoyages
+                        self.vider()
+                        self.refresh_datas()
+                        self.errorMsgLbl.setText("")
+                        self.errorMsgLbl.setVisible(False)
+                        # redirection
+                        # self.call_back()
+                    else:
+                        self.errorMsgLbl.setText(
+                            "Veuillez verifier vos informations!")
+                        self.errorMsgLbl.setVisible(True)
+                # *****
                 else:
                     self.errorMsgLbl.setText(
-                        "Veuillez verifier vos informations!")
+                            f"Montant doit etre entre ({MIN_VALUE}-{MAX_VALUE})!")
                     self.errorMsgLbl.setVisible(True)
-            # *****
             else:
-                print("Le montant est inforrect")
+                self.errorMsgLbl.setText(
+                        "Date incorrect!")
+                self.errorMsgLbl.setVisible(True)
+            
            
         else:
             self.errorMsgLbl.setText("Veuillez remplir tous les champs SVP!")
@@ -359,7 +375,7 @@ class UserView(QDialog):
         self.last_name_Field.clear()
         self.first_name_Field.clear()
         self.gender_QCB.setCurrentIndex(0)
-        self.birth_date_lbl.clear()
+        self.birth_date_QDTM.clear()
         self.phone_Field.clear()
         self.nif_Field.clear()
         self.username_Field.clear()
@@ -396,6 +412,10 @@ class UserView(QDialog):
                 self.confirm_pwd_Field.setText(str(""))
                 self.balance_Field.setText(str(row[0][9]))
                 self.gender_QCB.setCurrentText(row[0][10])
+                if row[0][11] == 1:
+                    self.yesAdmin_QPB.setChecked(True)
+                else:
+                    self.noAdmin_QPB.setChecked(True)
 
             else:
                 print("No data found")
@@ -415,16 +435,16 @@ class UserView(QDialog):
         phone = self.phone_Field.text()
         nif = self.nif_Field.text()
         username = self.username_Field.text()
-        # pwd = self.pwd_Field.text()
-        # cpwd = self.confirm_pwd_Field.text()
         etat = self.status_QCB.currentText()
         balance = self.balance_Field.text()
+        admin = 1 if self.get_isAdminChoice() else 0
         self.errorMsgLbl.setVisible(False)
 
         if self._isFormFielsValid(
                 code_user,last_name, first_name, gender, birth_date, phone, nif, username, etat, balance):
-
-            if float(balance):
+            MIN_VALUE = 25
+            MAX_VALUE = 1000000
+            if self.func_help.is_float_in_range(balance, MIN_VALUE,MAX_VALUE):
                 balance = float(balance)
                 # Récupération des données de l'utilisateur à partir des widgets
 
@@ -438,6 +458,7 @@ class UserView(QDialog):
                     ("username", username),
                     ("balance", balance),
                     ("status", etat),
+                    ("is_admin", admin),
                 ]
                 
                 where_data = f"id = {code_user}"
@@ -462,7 +483,9 @@ class UserView(QDialog):
                     self.errorMsgLbl.setVisible(True)
             # *****
             else:
-                print("Le montant est inforrect")
+                self.errorMsgLbl.setText(
+                        f"Montant doit etre entre {MIN_VALUE} - {MAX_VALUE}")
+                self.errorMsgLbl.setVisible(True)
         # *****
         
         else:

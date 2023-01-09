@@ -22,7 +22,6 @@ class PaymentsView(QDialog):
         self.ui()
         self.listTableWidget()
 
-
     def ui(self):
         self.groupBox = QGroupBox()
         self.groupBox.setMinimumSize(300, 600)

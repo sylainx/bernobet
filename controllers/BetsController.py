@@ -13,121 +13,101 @@ from authentification import Login
 import functools
 
 from controllers.Controller import Controller
+from controllers.MatchsController import MatchsController
+from controllers.UsersController import UsersController
 
 
-TABLE_NAME = "matchs"
+TABLE_NAME = "bets"
 PATH_NAME = "./db/database.db"
 COLUMNS_NAME = {
-    "id": "VARCHAR(255) PRIMARY KEY AUTOINCREMENT",
-    "match_type": "varchar(255)",
-    "pays": "varchar(255)",
-    "date": "datetime",
-    "eq_rec": "VARCHAR(255)",
-    "eq_vis": "varchar(255)",
+    "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+    "user_id": "varchar(255) NOT NULL",
+    "match_id": "varchar(255) NOT NULL",
+    "date": "DATETIME NOT NULL",
+    "montant_depense": "DOUBLE NOT NULL",
     "cote": "DOUBLE NOT NULL",
-    "score_final": "varchar(255)",
-    "etat": "varchar(255)",
+    "score_prevu": "varchar(255) NOT NULL",
+    "etat" : "VARCHAR(25)"
 }
 
 
 class BetsController ():
 
     def __init__(self) -> None:
-        self.TABLE_NAME="bets"
-        self.controller = Controller("./db/database.db")
-
-
+        self.TABLE_NAME=TABLE_NAME
+        self.controller = Controller(PATH_NAME)
+        self.COLUMNS_NAME=COLUMNS_NAME
+        self.user_controller = UsersController()
+        self.match_controller = MatchsController()
+        self.createTable()
     
-    def get_available_bets(self):
-        """
-        Lister tous les disponibles
-        """
 
-        whre_values = f" etat == 'N' "
-        matchs_datas = self.controller.select(self.TABLE_NAME, whre_values)
-        if matchs_datas:
-            list_of_matchs = list()
-            for m in matchs_datas:
-                dict_match = {
-                    'match_id': m[0],
-                    'match_type': m[1],
-                    'pays': m[2],
-                    'date': m[3],
-                    'eq_rec': m[4],
-                    'eq_vis': m[5],
-                    'cote': m[6],
-                    'scr_1': (m[7]).split(":")[0], # extrait separé par :
-                    'scr_2': (m[7]).split(":")[1], # extrait separé par :
-                    'etat': m[8],
-                }
-                list_of_matchs.append(dict_match)
+    def create_bet(self,columns:dict):
+        """
+            - Enregistrer un pari
+        """
+        if columns:
+            print(f"BEts colums: {columns}")
+            bets_datas = self.controller.insert(self.TABLE_NAME, columns.items())
+        else:
+            print(f"BEts controller- no data to insert: {columns}")
+        return columns
+            
+    
+    def get_bets(self, FOR_USER_ID=None):
+        """
+        Lister tous les paris disponibles
+        """
+        if FOR_USER_ID:
+            user_id = SessionManager.getItem('userStorage')
+            where_data = f" user_id = {user_id}"
+        else:
+            where_data= None
 
-            return list_of_matchs
+        bets_datas = self.controller.select(self.TABLE_NAME, where_data)
+        if bets_datas:
+            list_of_bets = list()
+            for bet in bets_datas:
+                # get user data
+                user = self.user_controller.get_user_datas()
+                match = self.match_controller.get_match_by_id(bet[2])
+                if user and match:
+                    
+                    dict_match = {                    
+                        "id": bet[0],
+                        "user": f"{user['first_name']} {user['last_name']}",
+                        "match": f"{match['eq_rec']} - {match['eq_vis']}",
+                        "date": bet[3],
+                        "montant_depense": bet[4],
+                        "cote": bet[5],
+                        "score_prevu": bet[6],
+                    }
+                    list_of_bets.append(dict_match)
+
+                return list_of_bets
             
         return None
     
+    def get_bet_by_id(self, id=None):
+        print("Click on bet")
 
-    
-    def get_all_matchs(self):
+
+    def createTable(self):
         """
-            Pour afficher toutes les matchs indistinctements
+        pour creer la table en question
+        si elle est deja presente, elle ne fait rien
         """
-        matchs_datas = self.controller.select(self.TABLE_NAME)
-        if matchs_datas:
-            list_of_matchs = list()
-            for m in matchs_datas:
-                dict_match = {
-                    'match_id': m[0],
-                    'match_type': m[1],
-                    'pays': m[2],
-                    'date': m[3],
-                    'eq_rec': m[4],
-                    'eq_vis': m[5],
-                    'cote': m[6],
-                    'scr_1': (m[7]).split(":")[0], # extrait separé par :
-                    'scr_2': (m[7]).split(":")[1], # extrait separé par :
-                    'etat': m[8],
-                }
-                list_of_matchs.append(dict_match)
+        result = self.controller.create_table(
+            table_name=self.TABLE_NAME, columns=self.COLUMNS_NAME.items())
 
-            return list_of_matchs
+        if not result:
+            print(f"Table : ```{self.TABLE_NAME}``` already exist")
+        else:
+            print(f"Table : ```{self.TABLE_NAME}``` vient d'etre créée")
 
-        return None
-    
-
-    def get_match_by_id(self, match_id):
+    def dropTable(self):
         """
-            Pour afficher un matchs par son id
+        use it only for drop table and delete all fields
         """
-
-        if not match_id :
-            return None
-
-        whre_id = f"id ='{match_id}'"
-        
-        matchs_datas = self.controller.select(self.TABLE_NAME,whre_id)
-        if matchs_datas:
-            dict_match = {
-                'match_id': matchs_datas[0][0],
-                'match_type': matchs_datas[0][1],
-                'pays': matchs_datas[0][2],
-                'date': matchs_datas[0][3],
-                'eq_rec': matchs_datas[0][4],
-                'eq_vis': matchs_datas[0][5],
-                'cote': matchs_datas[0][6],
-                'scr_1': (matchs_datas[0][7]).split(":")[0], # extrait separé par :
-                'scr_2': (matchs_datas[0][7]).split(":")[1], # extrait separé par :
-                'etat': matchs_datas[0][8],
-            }
-            
-            return dict_match
-
-        return None
-
-    
-    def generate_id(self,):
-        # Génère un nombre entier aléatoire compris entre 1 et 1000000
-        suffix = str(random.randint(1000, 1000000))
-        return "BET_" + suffix
-
-    # **************************************************************
+        self.controller.drop(self.TABLE_NAME)
+        print(f"Table ```{self.TABLE_NAME.upper()}``` is dropped")

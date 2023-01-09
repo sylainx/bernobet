@@ -75,9 +75,6 @@ class Login(QDialog):
 
         self.groupBox.setLayout(self.verticalLayout)
 
-        # self.loginButton.clicked.connect(self.connectTo)
-        self.registerButton.clicked.connect(self.registerTo)
-
         self.mainLayout.addWidget(self.groupBox, alignment=Qt.AlignCenter)
         self.mainLayout.setStretch(500, 500)
         self.setLayout(self.mainLayout)
@@ -85,6 +82,7 @@ class Login(QDialog):
 
         # ******************************************************** #
         self.loginButton.clicked.connect(lambda: self.manageUserConnection())
+        self.registerButton.clicked.connect(self.registerTo)
 
     def registerTo(self):
         # Ferme la fenêtre de login
@@ -130,10 +128,9 @@ class Login(QDialog):
 
             # Récupération des données de l'utilisateur à partir des widgets
             user_data = f"username= '{username}' AND password= '{pwd}' "
-
+            
             # Envoi des données de l'utilisateur au contrôleur pour enregistrement
             result = self.controller.select(self.TABLE_NAME, user_data)
-
             if result:
                 # nettoyage
                 self.vider()
@@ -141,6 +138,7 @@ class Login(QDialog):
                 self.errorMsgLbl.setVisible(False)
                 # redirection
                 SessionManager.setItem('userStorage', result[0][0])
+                
                 self.connectTo()
             else:
                 self.errorMsgLbl.setText(
@@ -166,7 +164,6 @@ class Login(QDialog):
         }
         whre=f" id = {user_id} "
         self.controller.update(TABLE_NAME, user_data.items(), whre)
-
     
 class Register(QDialog):
     def __init__(self, parent):
@@ -189,7 +186,7 @@ class Register(QDialog):
         self.Hbox = QHBoxLayout()
 
         self.title = QLabel("Inscription")
-
+        
         # last Name
         self.lastNameLabel = QLabel('Nom')
         self.lastNameField = QLineEdit()
@@ -238,9 +235,13 @@ class Register(QDialog):
         current_date = QDate.currentDate()
 
         # Affichez la date courante dans le champ de date
-        self.dateOfBirthField.setDate(current_date)
+        # min date
+        self.min_date = QDate.currentDate().addYears(-18)
+        # self.dateOfBirthField.setDate(current_date)        
         self.dateOfBirthField.setDisplayFormat("dd/MM/yyyy")
         self.dateOfBirthField.setCalendarPopup(True)
+        self.dateOfBirthField.setMaximumDate(self.min_date)
+        self.dateOfBirthField.setKeyboardTracking(False)
         self.dateOfBirthField.setContentsMargins(3, 0, 3, 0)
         self.dateOfBirthField.setMinimumWidth(200)
         self.dateOfBirthField.setMaximumWidth(300)
@@ -398,8 +399,8 @@ class Register(QDialog):
         username = self.userNameField.text()
         gender = self.get_gender_selected()
         birth_date = self.dateOfBirthField.text()
-        phone = self.phoneLabel.text()
-        nif = self.nif_cinLabel.text()
+        phone = self.phoneField.text()
+        nif = self.nif_cinField.text()
         password = self.passwordField.text()
         confirmPassword = self.confirmPasswordField.text()
 
@@ -411,41 +412,46 @@ class Register(QDialog):
 
         if last_name != '' and first_name != '' and username != '' and gender != '' and birth_date != '' \
                 and phone != '' and nif != '' and password != '':
+            
+            if QDate.fromString(birth_date, "dd/MM/yyyy") > self.min_date:
+                if password == confirmPassword:
 
-            if password == confirmPassword:
+                    # Récupération des données de l'utilisateur à partir des widgets
+                    user_data = {
+                        "last_name": last_name,
+                        "first_name": first_name,
+                        "gender": gender,
+                        "birth_date": birth_date,
+                        "phone": phone,
+                        "nif": nif,
+                        "username": username,
+                        "password": password,
+                        "balance": balance,
+                        "status": status,
+                        "is_admin": is_admin,
+                    }
+                    print(f"USER TO INSERT: {user_data}")
+                    # Envoi des données de l'utilisateur au contrôleur pour enregistrement
+                    result = self.controller.insert(TABLE_NAME, user_data.items())
 
-                # Récupération des données de l'utilisateur à partir des widgets
-                user_data = {
-                    "last_name": last_name,
-                    "first_name": first_name,
-                    "gender": gender,
-                    "birth_date": birth_date,
-                    "phone": phone,
-                    "nif": nif,
-                    "username": username,
-                    "password": password,
-                    "balance": balance,
-                    "status": status,
-                    "is_admin": is_admin,
-                }
-
-                # Envoi des données de l'utilisateur au contrôleur pour enregistrement
-                result = self.controller.insert(TABLE_NAME, user_data.items())
-
-                if result:
-                    # nettoyages
-                    self.vider()
-                    self.errorMsgLbl.setText("")
-                    self.errorMsgLbl.setVisible(False)
-                    # redirection
-                    self.loginTo()
+                    if result:
+                        # nettoyages
+                        self.vider()
+                        self.errorMsgLbl.setText("")
+                        self.errorMsgLbl.setVisible(False)
+                        # redirection
+                        self.loginTo()
+                    else:
+                        self.errorMsgLbl.setText(
+                            "Veuillez verifier vos informations!")
+                        self.errorMsgLbl.setVisible(True)
                 else:
                     self.errorMsgLbl.setText(
-                        "Veuillez verifier vos informations!")
+                        "Les mots de passe ne correspondent pas!")
                     self.errorMsgLbl.setVisible(True)
             else:
                 self.errorMsgLbl.setText(
-                    "Les mots de passe ne correspondent pas!")
+                    "Veuillez choisir une date inferieure!")
                 self.errorMsgLbl.setVisible(True)
 
         else:

@@ -1,38 +1,35 @@
 
+from datetime import date
+import datetime
 from PyQt5.QtWidgets import QApplication, QMainWindow, QGridLayout, QLabel, QWidget, \
     QHBoxLayout, QVBoxLayout, QPushButton, QGroupBox, QLineEdit,\
-    QScrollArea, QButtonGroup
+    QScrollArea, QButtonGroup, QMessageBox
 from PyQt5.QtGui import QIcon, QIntValidator, QDoubleValidator
 from PyQt5.QtCore import Qt
-import threading
-import time
-from SessionManager import SessionManager
+from Helpers import Helpers
+from Views.BetsView import BetsView
 from Views.PaymentsView import PaymentsView
 from Views.matchs.MatchsView import MatchView
 from Views.users.AccountView import AccountView
 from Views.users.UsersView import UserView
-from authentification import Login
-import functools
+from controllers.BetsController import BetsController
 
-from controllers.Controller import Controller
 from controllers.MatchsController import MatchsController
+from controllers.UsersController import UsersController
 
 
 class mainView(QMainWindow):
 
     def __init__(self, parent) -> None:
         super().__init__()
-        # login = Login(self)
         self.initialise_constants()
-        self.controller = Controller(self.PATH_NAME)
+        self.match_controller = MatchsController()
+        self.user_controller = UsersController()
+        self.bet_controller = BetsController()
+        self.func_helpers = Helpers()
         self.setWindowTitle(self.WINDOW_TITLE)
         self.setMinimumSize(1000, 600)
         self.setWindowIcon(QIcon(self.WINDOW_ICON))
-        self.match_controller = MatchsController()
-
-        # self.show()
-        self.user_infos = dict()
-
         self.content = QWidget()
         # self.content.setStyleSheet(
         #     "background-color: #FAFAFA;"
@@ -41,12 +38,13 @@ class mainView(QMainWindow):
         self.setCentralWidget(self.content)
 
     def initialise(self):
+        self.user_infos = self.user_controller.get_user_datas()
         self.display()
-        self.get_user_datas()
         self.header_content()
         self.sidebar_content()
         self.bet_info_content()
         self.content.setLayout(self.container)
+        self.available_match_content()
 
     def display(self) -> None:
 
@@ -100,7 +98,8 @@ class mainView(QMainWindow):
         # Logo de l'application
         self.logo = QLabel("JetBrainsBet")
         self.logo.setStyleSheet(
-            "color: #f4661b;"
+            "color: rgb(244,102,27);"
+            "font-weight: bold;"
         )
 
         # Bouton pour les matchs
@@ -109,11 +108,12 @@ class mainView(QMainWindow):
 
         # Bouton pour les paris
         self.bet_btn = QPushButton("Paris")
-        # self.bet_btn.clicked.connect(lambda:self.displayParisCallback())
+        self.bet_btn.clicked.connect(lambda:self.displayParisCallback())
 
         # Bouton pour les paiements
         self.payment_btn = QPushButton("Paiements")
-        self.payment_btn.clicked.connect(lambda:self.displayAdminPaymentsCallback())
+        self.payment_btn.clicked.connect(
+            lambda: self.displayAdminPaymentsCallback())
 
         # Bouton pour les comptes
         self.account_btn = QPushButton("Comptes")
@@ -138,11 +138,15 @@ class mainView(QMainWindow):
         self.content_layout = QVBoxLayout()
 
         self.user = QLabel(f"{self.user_infos['username']} ")
-        self.sold = QLabel(f" Solde : {self.user_infos['balance']} Gourdes")
-
+        self.sold = QLabel(f" Solde : {self.user_infos['balance']} Gdes")
+        self.logout_btn = QPushButton("Logout", self)
+        self.logout_btn.setStyleSheet(
+            "background: rgb(244,102,27); border-radius:5px; padding:5px")
+        self.logout_btn.clicked.connect(lambda: self.logoutCallback())
         # Ajout des widgets
         self.content_layout.addWidget(self.user)
         self.content_layout.addWidget(self.sold)
+        self.content_layout.addWidget(self.logout_btn)
 
         # Ajout des widgets du content_layout dans le menu
         self.auth.setLayout(self.content_layout)
@@ -167,7 +171,6 @@ class mainView(QMainWindow):
         self.match_btn = QPushButton("Matchs")
         self.account_btn = QPushButton("Compte")
         self.adm_payments_btn = QPushButton("Paiements")
-        
 
         # Ajout des Widgets
         if self.user_infos['is_admin']:
@@ -185,16 +188,6 @@ class mainView(QMainWindow):
         self.content_btm_layout = QVBoxLayout()
         self.grp = QGroupBox()
 
-        self.info_lbl = QLabel("Informations")
-        self.setting_btn = QPushButton("Parametres")
-        self.help_btn = QPushButton("Aide")
-        self.about_btn = QPushButton("A propos")
-
-        # Ajout des Widgets
-        self.content_btm_layout.addWidget(self.info_lbl)
-        self.content_btm_layout.addWidget(self.setting_btn)
-        self.content_btm_layout.addWidget(self.help_btn)
-        self.content_btm_layout.addWidget(self.about_btn)
 
         # Ajout des composants dans le main_layout
         self.grp.setLayout(self.content_btm_layout)
@@ -212,9 +205,7 @@ class mainView(QMainWindow):
             lambda: self.displayAdminPaymentsCallback())
         self.dashboard_btn.clicked.connect(lambda: self.dashboard_content())
         self.match_btn.clicked.connect(lambda: self.admin_match_content())
-        self.setting_btn.clicked.connect(lambda: self.setting_content())
-        self.help_btn.clicked.connect(lambda: self.help_content())
-        self.about_btn.clicked.connect(lambda: self.about_content())
+        
 
     def bet_info_content(self):
         # pariages
@@ -228,16 +219,25 @@ class mainView(QMainWindow):
         self.subtitle_lbl = QLabel("Informations du pariage")
         self.subtitle_lbl.setStyleSheet("font:16px;  color: white")
         self.bet_amount_lbl = QLabel("Montant du pariage : ")
-        #
+        # match_id
+        self.BET_match_id = QLabel()
+        self.BET_match_id.setVisible(False)
+        # home team
         self.eq_1 = QLabel()
         self.eq_1.setVisible(False)
+        # move team
         self.eq_2 = QLabel()
         self.eq_2.setVisible(False)
+        # cote
+        self.match_cote = QLabel()
+        self.match_cote.setVisible(False)
+        # score 1
         self.usr_scr1 = QLineEdit()
         self.usr_scr1.setValidator(QIntValidator(0, 10, self))
         self.usr_scr1.setPlaceholderText(
             "Score 1")
         self.usr_scr1.setVisible(False)
+        # score 2
         self.usr_scr2 = QLineEdit()
         self.usr_scr2.setVisible(False)
         self.usr_scr2.setValidator(QIntValidator(0, 10, self))
@@ -245,26 +245,32 @@ class mainView(QMainWindow):
             "Score 1")
         self.bet_amount_field = QLineEdit()
         self.bet_amount_field.setText(str(25))
-        self.bet_amount_field.setStyleSheet("border-radius: 5px; height:20px; border: 1px solid #FBFBFB")
+        self.bet_amount_field.setStyleSheet(
+            "border-radius: 5px; height:20px; border: 1px solid #FBFBFB")
         self.bet_amount_field.setValidator(
             QDoubleValidator(0.0, 75000.0, 2, self))
         self.bet_amount_field.setPlaceholderText(
             "Saisir le montant du pariage")
-        self.account_btn = QPushButton("Parier")
-        self.account_btn.setStyleSheet(
+
+        self.bet_errorMsg= QLabel()
+        self.bet_errorMsg.setVisible(False)
+        self.bet_errorMsg.setStyleSheet("color: white; background: rgb(244,102,27);")
+        
+        self.place_bet_btn = QPushButton("Parier")
+        self.place_bet_btn.setStyleSheet(
             "background-color: #f4661b;"
             "border-radius: 5px;"
-            "padding: 5px 1pxh;"
+            "padding: 5px 2px;"
         )
 
         self.bet_h_layout = QHBoxLayout()
         self.bet_win_h_layout = QHBoxLayout()
 
         self.total_lbl = QLabel("Total : ")
-        self.total_value_lbl = QLabel(f"{20.00} Gourdes")
+        self.total_value_lbl = QLabel(f"{20.00} Gdes")
 
-        self.bet_win_lbl = QLabel("Possibilite de gain de : ")
-        self.bet_win_value_lbl = QLabel(f"{300.00} Gourdes")
+        self.bet_win_lbl = QLabel("Possibilite de gain de : ")        
+        self.bet_win_value_lbl = QLabel(f"{300.00} Gdes")
 
         # Ajout des Widgets
         self.content_layout.addWidget(self.subtitle_lbl, Qt.AlignCenter)
@@ -273,12 +279,13 @@ class mainView(QMainWindow):
         grid_Lyt.addWidget(self.eq_2, 0, 1)
         grid_Lyt.addWidget(self.usr_scr1, 1, 0)
         grid_Lyt.addWidget(self.usr_scr2, 1, 1)
-
         self.content_layout.addLayout(grid_Lyt)
         # grid layout
+        self.content_layout.addWidget(self.match_cote)
         self.content_layout.addWidget(self.bet_amount_lbl)
         self.content_layout.addWidget(self.bet_amount_field)
-        self.content_layout.addWidget(self.account_btn)
+        self.content_layout.addWidget(self.bet_errorMsg)
+        self.content_layout.addWidget(self.place_bet_btn)
 
         self.bet_h_layout.addWidget(self.total_lbl)
         self.bet_h_layout.addWidget(self.total_value_lbl)
@@ -300,8 +307,21 @@ class mainView(QMainWindow):
         # Ajout du main_layout dans le sidebar
         self.bet_info.setLayout(self.main_layout)
 
-        # Evenements sur les boutons
-        self.dashboard_btn.clicked.connect(self.dashboard_content)
+        # =========== A C T I O N ===============
+        self.place_bet_btn.clicked.connect(
+            lambda x: self.displayUserPlaceBetCallback(x))
+        # self.bet_amount_field.textChanged.connect(lambda:self.validaAmountCallback())
+
+    # def validaAmountCallback(self):
+    #     if self.func_helpers.is_float_in_range(self.bet_amount_field.text(),0):
+    #         print("Valid amount")
+    #         mt = float(self.bet_amount_field.text())
+    #         ct_mtch = float(self.BET_match_id.text())
+    #         amount = mt * ct_mtch
+    #         self.bet_win_value_lbl.setText(f"{amount} Gdes")
+    #         return True
+
+    #     return False
 
     def dashboard_content(self):
 
@@ -494,10 +514,10 @@ class mainView(QMainWindow):
     # end match_contents
 
     def available_match_content(self):
-
         # Contenu du dashboard
         self.main_layout = QVBoxLayout()
         self.main_layout.setAlignment(Qt.AlignTop)
+
         self.content_layout = QVBoxLayout()
         self.content_layout.setAlignment(Qt.AlignTop)
         self.grp = QGroupBox()
@@ -541,7 +561,7 @@ class mainView(QMainWindow):
                     "border-radius: 2px;"
                     "padding: 2px 5px;"
                 )
-                self.send2Bet_Btn.setContentsMargins(0,0,0,0)
+                self.send2Bet_Btn.setContentsMargins(0, 0, 0, 0)
                 self.send2Bet_Btn.setObjectName(f"{match['match_id']}")
                 self.group_lineMatch_QGB.addButton(self.send2Bet_Btn)
 
@@ -558,7 +578,7 @@ class mainView(QMainWindow):
                 )
 
                 hLyt_Boxmatch.addWidget(self.eqDom_Lbl, alignment=Qt.AlignLeft)
-                
+
                 # center box
                 self.eqScore_Lbl = QLabel(
                     f"[ {match['scr_1']} - {match['scr_2']} ]")
@@ -571,11 +591,12 @@ class mainView(QMainWindow):
                     "color: rgb(255,255,255);"
                     "font: 16px bold;"
                 )
-                
+
                 hLyt_Boxmatch.addWidget(
                     self.eqDep_Lbl, alignment=Qt.AlignRight)
                 hLyt_Boxmatch.addWidget(
                     self.send2Bet_Btn, alignment=Qt.AlignRight)
+
                 # *********** end Boite mise en Page pour un match
                 scrl_Lyt.addWidget(boxMatch_WDG)
                 # self.group_lineMatch_QGB.setLayout(boxMatch_WDG)
@@ -643,37 +664,75 @@ class mainView(QMainWindow):
         self.WINDOW_TITLE = "JetbrainsBet"
         self.WINDOW_ICON = "assets/logo.pnp"
 
-    def get_user_datas(self):
-        user_id = SessionManager.getItem('userStorage')
-        if user_id and int(user_id) > 0:
-            where_data = f"id = {user_id}"
-            result = self.controller.select(self.TABLE_NAME, where_data)
-            data = {
-                'id': result[0][0],
-                'last_name': result[0][1],
-                'first_name': result[0][2],
-                'gender': result[0][3],
-                'birth_date': result[0][4],
-                'phone': result[0][5],
-                'nif': result[0][6],
-                'username': result[0][7],
-                'balance': result[0][9],
-                'status': result[0][10],
-                'is_admin': result[0][11],
-            }
-
-            self.user_infos = data
-
-    def updateUserInfo(self):
-        # self.user
-        pass
-
-    # ==================================================
+    # ====================  U S E R S   =========================
 
     def displayUserAccountCallback(self):
         print("User account is clicked")
         self.ui_account_user = AccountView(self)
         self.ui_account_user.refresh_datas()
+
+    def displayParisCallback(self):
+        print("Liste pari is clicked")
+        self.ui_user_bets = BetsView(self)
+        self.ui_user_bets.refresh_datas()
+
+    def displayUserPlaceBetCallback(self, btn: QPushButton):
+
+        # button = btn.objectName()
+        self.bet_errorMsg.setVisible(False)
+        id_match_selectionne = self.BET_match_id.text()
+        match = self.match_controller.get_match_by_id(id_match_selectionne)
+        
+        if match:
+            scr1_enter_by_user = self.usr_scr1.text()
+            scr2_enter_by_user = self.usr_scr2.text()
+            mt_place = self.bet_amount_field.text()  # montant entré par l'utilisateur
+            MIN_VALUE = 0
+            MIN_BET=25
+            MAX_BET=75000
+
+            if scr1_enter_by_user != "" and scr2_enter_by_user != "" and mt_place != "" \
+                and self.func_helpers.is_int_in_range(scr1_enter_by_user, MIN_VALUE) \
+                and self.func_helpers.is_int_in_range(scr2_enter_by_user, MIN_VALUE)\
+                and self.func_helpers.is_float_in_range(mt_place, MIN_BET, MAX_BET):
+                mt_place = float(mt_place)
+                
+                if mt_place <= float(self.user_infos['balance']):
+                    INITIAL_state = "SAVE"
+                    bet_datas = {
+                        "user_id": self.user_infos['id'],
+                        "match_id": match['match_id'],
+                        "date": self.func_helpers.get_datetime(),
+                        "montant_depense": mt_place,
+                        "cote": match['cote'],
+                        "score_prevu": f"{scr1_enter_by_user}:{scr2_enter_by_user}",
+                        "etat" : INITIAL_state
+                    }
+                    
+                    # Enregistrer le pari
+                    bet = self.bet_controller.create_bet(bet_datas)
+                    # Enlever le montant sur le compte de l'utilisateur
+                    remove_balance= self.user_controller.pay_with_balance(self.user_infos['id'], mt_place)
+                    # update info de l'utilsateur
+                    self.user_infos = self.user_controller.get_user_datas()
+                    print(f"New Balance: {remove_balance}")
+                    QMessageBox.information(
+                    None, "Confirmation", "Enregistrement pari reussi", QMessageBox.Ok)
+                    self.emptyField()
+                    self.initialise()
+                else:
+                    self.bet_errorMsg.setText("Balance insuffisante")
+                    self.bet_errorMsg.setVisible(True)
+            else:
+                self.bet_errorMsg.setText(f"Entrer score du match et/ou montant pari({MIN_BET}-{MAX_BET})!")
+                self.bet_errorMsg.setVisible(True)
+        else:
+            self.bet_errorMsg.setText(f"Veuillez choisir un match SVP!")
+            self.bet_errorMsg.setVisible(True)
+
+    # end displayUserPlaceBetCallback()
+
+    # ====================  A D M I N   =========================
 
     def displayAdminListUsersCallback(self):
         self.ui_admin_user_view = UserView(self)
@@ -689,7 +748,7 @@ class mainView(QMainWindow):
             Réf. fonction `bet_info_content` 
             Arguments:
                 - `btn: QPushButton` -> le bouton cliqué
-            
+
         """
         obj_name = btn.objectName()
         print(f"Match id : {obj_name}")
@@ -699,14 +758,18 @@ class mainView(QMainWindow):
 
         match_info = self.match_controller.get_match_by_id(obj_name)
         if match_info:
-            print(f"---> {match_info}")
+
             self.eq_1.setVisible(True)
             self.eq_2.setVisible(True)
             self.usr_scr1.setVisible(True)
             self.usr_scr2.setVisible(True)
+            self.match_cote.setVisible(True)
             # fill inputs
             self.eq_1.setText(match_info['eq_rec'])
             self.eq_2.setText(match_info['eq_vis'])
+            self.match_cote.setText(f"Cote: {match_info['cote']} ")
+            # ajouter objectName pour connaitre l'ID match
+            self.BET_match_id.setText(match_info['match_id'])
 
     def refresh_dashboard(self):
         """
@@ -715,3 +778,24 @@ class mainView(QMainWindow):
                 - balance
         """
         print("To refresh dashboard")
+
+    def logoutCallback(self):
+        self.parent.startMainView()
+        self.close()
+
+    def emptyField(self):
+        self.eq_1.setVisible(False)
+        self.eq_2.setVisible(False)
+        self.usr_scr1.setVisible(False)
+        self.usr_scr2.setVisible(False)
+        self.match_cote.setVisible(False)
+        # fill inputs
+        self.eq_1.clear()
+        self.eq_2.clear()
+        self.usr_scr1.clear()
+        self.usr_scr2.clear()
+        self.match_cote.clear()
+        # ajouter objectName pour connaitre l'ID match
+        self.BET_match_id.clear()
+        # 
+        self.bet_amount_field.setText(str(25))

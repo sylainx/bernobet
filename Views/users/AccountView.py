@@ -84,6 +84,10 @@ class AccountView(QDialog):
         gnd = ["Masculin", "Feminin"]
         self.gender_QCB.addItems(gnd)
         # birth date
+        # min date
+        self.min_date = QDate.currentDate().addYears(-18)
+        self.birth_date_QDTM.setMaximumDate(self.min_date)
+        self.birth_date_QDTM.setKeyboardTracking(False)
         self.birth_date_lbl = QLabel("Date de naissance: ")
         self.birth_date_Field = QDateEdit()
         self.birth_date_Field.setDisplayFormat("yyyy/MM/dd")
@@ -280,41 +284,45 @@ class AccountView(QDialog):
 
         if self._isFormFielsValid(
                 code_user, last_name, first_name, gender, birth_date, phone, nif, username, pwd, cpwd):
+            if QDate.fromString(birth_date, "dd/MM/yyyy") > self.min_date:
+                if pwd == cpwd:
+                    # Récupération des données de l'utilisateur à partir des widgets
 
-            if pwd == cpwd:
-                # Récupération des données de l'utilisateur à partir des widgets
+                    user_data = [
+                        ("last_name", last_name),
+                        ("first_name", first_name),
+                        ("gender", gender),
+                        ("birth_date", birth_date),
+                        ("phone", phone),
+                        ("nif", nif),
+                        ("username", username),
+                        ("password", pwd),
+                    ]
 
-                user_data = [
-                    ("last_name", last_name),
-                    ("first_name", first_name),
-                    ("gender", gender),
-                    ("birth_date", birth_date),
-                    ("phone", phone),
-                    ("nif", nif),
-                    ("username", username),
-                    ("password", pwd),
-                ]
+                    where_data = f"id = {code_user}"
 
-                where_data = f"id = {code_user}"
+                    print(f"user data: {user_data}")
 
-                print(f"user data: {user_data}")
+                    # Envoi des données de l'utilisateur au contrôleur pour enregistrement
+                    result = self.controller.update(
+                        TABLE_NAME, user_data, where_data)
 
-                # Envoi des données de l'utilisateur au contrôleur pour enregistrement
-                result = self.controller.update(
-                    TABLE_NAME, user_data, where_data)
-
-                # nettoyages
-                # self.vider()
-                QMessageBox.information(self, 'Modification', "Modification effectuée")
-                self.refresh_datas()
-                self.errorMsgLbl.setText("")
-                self.errorMsgLbl.setVisible(False)
-                # redirection
-                # self.call_back()
-                
-            # *****
+                    # nettoyages
+                    # self.vider()
+                    QMessageBox.information(self, 'Modification', "Modification effectuée")
+                    self.refresh_datas()
+                    self.errorMsgLbl.setText("")
+                    self.errorMsgLbl.setVisible(False)
+                    # redirection
+                    # self.call_back()
+            
+                # *****
+                else:
+                    self.errorMsgLbl.setText("Les mots de passe ne correspondent pas")
+                    self.errorMsgLbl.setVisible(True)
+                # *****
             else:
-                self.errorMsgLbl.setText("Les mots de passe ne correspondent pas")
+                self.errorMsgLbl.setText("Date incorrecte")
                 self.errorMsgLbl.setVisible(True)
             # *****
 

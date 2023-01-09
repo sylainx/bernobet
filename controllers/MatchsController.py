@@ -9,7 +9,6 @@ from Views.matchs.MatchsView import MatchView
 from Views.users.AccountView import AccountView
 from Views.users.UsersView import UserView
 from authentification import Login
-import functools
 
 from controllers.Controller import Controller
 
@@ -39,11 +38,10 @@ class MatchsController ():
     
     def get_available_matchs(self):
         """
-        Lister tous les disponibles
-
+        Lister tous matchs les disponibles
         """
 
-        whre_values = f" etat == 'N' "
+        whre_values = f" etat == 'N' OR etat='E' "
         matchs_datas = self.controller.select(self.TABLE_NAME, whre_values)
         if matchs_datas:
             list_of_matchs = list()
